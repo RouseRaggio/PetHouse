@@ -7,7 +7,7 @@ class User(BaseModel):
     edad: int
     usuario: str
     contrasena: str
-    rol: int
+    rol: str = "user"
 
 
 

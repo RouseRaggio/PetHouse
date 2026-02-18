@@ -2,7 +2,7 @@ from pydantic import BaseModel
 from typing import Optional
 
 class PetResponse(BaseModel):
-    id: int
+    pet_id: int
     nombre: str
     especie: str
     edad: Optional[int]
