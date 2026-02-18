@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Entorno virtual
+myvenv/
+venv/
+env/
+
+# Alembic cache
+alembic/__pycache__/
+
+# Variables de entorno
+.env
+
+# VS Code
+.vscode/
+
+# Docker
+postgres_data/
