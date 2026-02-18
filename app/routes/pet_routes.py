@@ -20,6 +20,13 @@ async def create_pet(
     user_id: int = Form(...),
     imagen: UploadFile = File(...)
 ):
+    
+    if imagen.content_type not in ["image/jpeg", "image/png"]:
+        raise HTTPException(
+            status_code=400,
+            detail="Solo se permiten imágenes JPG o PNG"
+        )
+
     if not os.path.exists(UPLOAD_FOLDER):
         os.makedirs(UPLOAD_FOLDER)
 

@@ -23,10 +23,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Servir imágenes
 app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
-# Rutas
 app.include_router(user_router)
 app.include_router(pet_router)
 

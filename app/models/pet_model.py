@@ -1,7 +1,7 @@
 from pydantic import BaseModel
 from typing import Optional
 
-class PetResponse(BaseModel):
+class PetBase(BaseModel):
     pet_id: int
     nombre: str
     especie: str
