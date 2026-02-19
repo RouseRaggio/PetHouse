@@ -1,31 +1,65 @@
-from fastapi import APIRouter, HTTPException
-from app.controllers.user_controller import UserController
-from app.models.user_model import User
+from fastapi import APIRouter, Depends
+from sqlalchemy.orm import Session
 
-router = APIRouter(
-    tags=["Usuarios"]
+from app.db.session import get_db
+from app.schemas.user_schema import UserCreate, UserUpdate, UserResponse
+from app.controllers.user_controller import (
+    create_user,
+    get_users,
+    get_user,
+    update_user,
+    delete_user,
+    restore_user
 )
 
-nuevo_usuario = UserController()
+router = APIRouter(
+    prefix="/users",
+    tags=["Users"]
+)
 
-@router.post("/create_user")
-async def create_user(user: User):
-    return nuevo_usuario.create_user(user)
+# =========================
+# CREATE
+# =========================
+@router.post("/", response_model=UserResponse)
+def create(user: UserCreate, db: Session = Depends(get_db)):
+    return create_user(db, user)
 
-@router.get("/get_user/{user_id}", response_model=User)
-async def get_user(user_id: int):
-    return nuevo_usuario.get_user(user_id)
 
-@router.get("/get_users/")
-async def get_users():
-    return nuevo_usuario.get_users()
+# =========================
+# GET ALL
+# =========================
+@router.get("/", response_model=list[UserResponse])
+def read_all(db: Session = Depends(get_db)):
+    return get_users(db)
 
-@router.put("/update_user/{user_id}")
-async def update_user(user_id: int, user: User):
-    return nuevo_usuario.update_user(user_id, user)
 
-@router.delete("/delete_user/{user_id}")
-async def delete_user(user_id: int):
-    nuevo_usuario.delete_user(user_id)
-    return {"message": "Usuario eliminado correctamente"}
- 
+# =========================
+# GET ONE
+# =========================
+@router.get("/{user_id}", response_model=UserResponse)
+def read_one(user_id: int, db: Session = Depends(get_db)):
+    return get_user(db, user_id)
+
+
+# =========================
+# UPDATE
+# =========================
+@router.put("/{user_id}", response_model=UserResponse)
+def update(user_id: int, user: UserUpdate, db: Session = Depends(get_db)):
+    return update_user(db, user_id, user)
+
+
+# =========================
+# DELETE (soft)
+# =========================
+@router.delete("/{user_id}")
+def delete(user_id: int, db: Session = Depends(get_db)):
+    return delete_user(db, user_id)
+
+
+# =========================
+# RESTORE
+# =========================
+@router.put("/restore/{user_id}")
+def restore(user_id: int, db: Session = Depends(get_db)):
+    return restore_user(db, user_id)

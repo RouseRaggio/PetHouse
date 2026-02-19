@@ -1,12 +1,20 @@
 from fastapi import FastAPI
 from app.routes.user_routes import router as user_router
 from app.routes.pet_routes import router as pet_router
+from app.db.base import Base
+from app.models.user import User
+from app.models.role import Role
+from app.models.permission import Permission
+from app.models.role_permission import RolePermission
+from app.models import *
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 import os
+from app.db.session import engine
 
 app = FastAPI()
 
+Base.metadata.create_all(bind=engine)
 # Crear carpeta uploads si no existe
 if not os.path.exists("uploads"):
     os.makedirs("uploads")

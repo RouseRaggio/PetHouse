@@ -1,119 +1,129 @@
-import psycopg2
+from sqlalchemy.orm import Session
 from fastapi import HTTPException
-from app.config.db_config import get_db_connection
-from app.models.user_model import User
-from fastapi.encoders import jsonable_encoder
+from datetime import datetime
 
-class UserController:
-         
-    def create_user(self, user: User):   
-        try:
-            conn = get_db_connection()
-            cursor = conn.cursor()
-            cursor.execute("INSERT INTO usuarios (nombre,apellido,edad,usuario,contrasena, rol) VALUES (%s, %s, %s, %s ,%s,%s)", (user.nombre, user.apellido, user.edad, user.usuario, user.contrasena, "user"))
-            conn.commit()
-            conn.close()
-            return {"resultado": "Usuario creado"}
-        except mysql.connector.Error as err:
-            # Si falla el INSERT, los datos no quedan guardados parcialmente en la base de datos
-            # Se usa para deshacer los cambios de la transacción activa cuando ocurre un error en el try.
-            conn.rollback()
-        finally:
-            conn.close()
-        
+from app.models.user import User
+from app.schemas.user_schema import UserCreate, UserUpdate
+from app.core.security import hash_password
 
-    def get_user(self, user_id: int):
-        try:
-            conn = get_db_connection()
-            cursor = conn.cursor()
-            cursor.execute("SELECT * FROM usuarios WHERE id = %s", (user_id,))
-            result = cursor.fetchone()
-            payload = []
-            content = {} 
-            
-            content={
-                    'id':int(result[0]),
-                    'nombre':result[1],
-                    'apellido':result[2],
-                    'edad':int(result[3]),
-                    'usuario':result[4],
-                    'contrasena':result[5]
-            }
-            payload.append(content)
-            
-            json_data = jsonable_encoder(content)            
-            if result:
-               return  json_data
-            else:
-                ##Esto interrumpe la ejecución y responde al cliente con un código 404
-                ## comunica al cliente de la API qué pasó (error HTTP).
-                ##código 404,comportamiento correcto según las reglas HTTP
-                raise HTTPException(status_code=404, detail="User not found")  
-                
-        except mysql.connector.Error as err:
-            # Se usa para deshacer los cambios de la transacción activa cuando ocurre un error en el try.
-            ##Maneja el estado de la transacción en la base de datos.Si un INSERT, UPDATE o DELETE falla dentro de una transacción, rollback() revierte esos cambios.
-            conn.rollback()
-        finally:
-            conn.close()
-       
-    def get_users(self):
-        try:
-            conn = get_db_connection()
-            cursor = conn.cursor()
-            cursor.execute("SELECT * FROM usuarios")
-            result = cursor.fetchall()
-            payload = []
-            content = {} 
-            for data in result:
-                content={
-                    'id':data[0],
-                    'nombre':data[1],
-                    'edad':data[2],
-                    'usuario':data[3],
-                    'contrasena':data[4]
-                }
-                payload.append(content)
-                content = {}
-            json_data = jsonable_encoder(payload)        
-            if result:
-               return {"resultado": json_data}
-            else:
-                raise HTTPException(status_code=404, detail="User not found")  
-                
-        except mysql.connector.Error as err:
-            conn.rollback()
-        finally:
-            conn.close()
-      
-      
-    
-    def update_user(self, user_id: int, user: User):
-        try:
-            conn = get_db_connection()
-            cursor = conn.cursor()
-            cursor.execute("UPDATE usuarios SET nombre=%s, apellido=%s, edad=%s, usuario=%s, contrasena=%s WHERE id=%s", 
-                           (user.nombre, user.apellido, user.edad, user.usuario, user.contrasena, user_id))
-            conn.commit()
-            conn.close()
-            return {"resultado": "Usuario actualizado"}
-        except mysql.connector.Error as err:
-            conn.rollback()
-        finally:
-            conn.close()   
 
-    def delete_user(self, user_id: int):
-        try:
-            conn = get_db_connection()
-            cursor = conn.cursor()
-            cursor.execute("DELETE FROM usuarios WHERE id = %s", (user_id,))
-            conn.commit()
-            conn.close()
-            return {"resultado": "Usuario eliminado"}
-        except mysql.connector.Error as err:
-            conn.rollback()
-        finally:
-            conn.close()  
-       
 
-##user_controller = UserController()
+
+def create_user(db: Session, user: UserCreate):
+
+    existing_user = db.query(User).filter(
+        User.email == user.email,
+        User.deleted_at == None
+    ).first()
+
+    if existing_user:
+        raise HTTPException(status_code=400, detail="Email ya registrado")
+
+    new_user = User(
+        nombre=user.nombre,
+        email=user.email,
+        password=hash_password(user.password),
+        role_id=user.role_id
+    )
+
+    db.add(new_user)
+    db.commit()
+    db.refresh(new_user)
+
+    return new_user
+
+
+def get_users(db: Session):
+    return db.query(User).filter(
+        User.deleted_at == None
+    ).all()
+
+
+
+
+def get_user(db: Session, user_id: int):
+
+    user = db.query(User).filter(
+        User.id == user_id,
+        User.deleted_at == None
+    ).first()
+
+    if not user:
+        raise HTTPException(status_code=404, detail="Usuario no encontrado")
+
+    return user
+
+
+
+
+def update_user(db: Session, user_id: int, user_data: UserUpdate):
+
+    user = db.query(User).filter(
+        User.id == user_id,
+        User.deleted_at == None
+    ).first()
+
+    if not user:
+        raise HTTPException(status_code=404, detail="Usuario no encontrado")
+
+    # Validar email duplicado si cambia
+    if user_data.email and user_data.email != user.email:
+        existing_email = db.query(User).filter(
+            User.email == user_data.email,
+            User.deleted_at == None
+        ).first()
+
+        if existing_email:
+            raise HTTPException(status_code=400, detail="Email ya registrado")
+
+        user.email = user_data.email
+
+    if user_data.nombre:
+        user.nombre = user_data.nombre
+
+    if user_data.password:
+        user.password = hash_password(user_data.password)
+
+    if user_data.role_id:
+        user.role_id = user_data.role_id
+
+    db.commit()
+    db.refresh(user)
+
+    return user
+
+
+
+def delete_user(db: Session, user_id: int):
+
+    user = db.query(User).filter(
+        User.id == user_id,
+        User.deleted_at == None
+    ).first()
+
+    if not user:
+        raise HTTPException(status_code=404, detail="Usuario no encontrado")
+
+    user.deleted_at = datetime.utcnow()
+
+    db.commit()
+
+    return {"message": "Usuario eliminado lógicamente"}
+
+
+
+
+def restore_user(db: Session, user_id: int):
+
+    user = db.query(User).filter(
+        User.id == user_id,
+        User.deleted_at != None
+    ).first()
+
+    if not user:
+        raise HTTPException(status_code=404, detail="Usuario no encontrado o no está eliminado")
+
+    user.deleted_at = None
+    db.commit()
+
+    return {"message": "Usuario restaurado correctamente"}

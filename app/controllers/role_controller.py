@@ -2,12 +2,12 @@ import psycopg2
 from fastapi import HTTPException
 from fastapi.encoders import jsonable_encoder
 from app.config.db_config import get_db_connection
-from app.models.role_model import Role
+from app.models.role_model import RoleBase
 
 
 class RoleController:
 
-    def create_role(self, role: Role):
+    def create_role(self, role: RoleBase):
         try:
             conn = get_db_connection()
             cursor = conn.cursor()
