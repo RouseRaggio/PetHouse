@@ -1,7 +1,16 @@
-from pydantic import BaseModel
-from typing import Optional
+from sqlalchemy import Column, Integer, String
+from sqlalchemy.orm import relationship
+from app.db.base import Base
 
-class RoleBase(BaseModel):
-    role_id: int 
-    nombre: str
-    descripcion: Optional[str] = None
+class Role(Base):
+    __tablename__ = "roles"
+
+    id = Column(Integer, primary_key=True)
+    name = Column(String, unique=True, nullable=False)
+
+    users = relationship("User", back_populates="role")
+    permissions = relationship(
+        "Permission",
+        secondary="role_permissions",
+        back_populates="roles"
+    )
