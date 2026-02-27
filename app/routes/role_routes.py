@@ -1,35 +1,40 @@
-from fastapi import APIRouter, HTTPException
-from app.controllers.role_controller import RoleController
-from app.models.role_model import Role
+from fastapi import APIRouter, Depends
+from sqlalchemy.orm import Session
+from typing import List
 
-router = APIRouter(
-    tags=["Roles"]
+from app.db.session import get_db
+from app.schemas.role_schema import RoleCreate, RoleUpdate, RoleResponse
+from app.controllers.role_controller import (
+    create_role,
+    get_roles,
+    get_role,
+    update_role,
+    delete_role
 )
 
-nuevo_rol = RoleController()
+router = APIRouter(prefix="/roles", tags=["Roles"])
 
 
-@router.post("/create_role")
-async def create_role(role: Role):
-    return nuevo_rol.create_role(role)
+@router.post("/", response_model=RoleResponse)
+def create(data: RoleCreate, db: Session = Depends(get_db)):
+    return create_role(db, data)
 
 
-@router.get("/get_role/{role_id}", response_model=Role)
-async def get_role(role_id: int):
-    return nuevo_rol.get_role(role_id)
+@router.get("/", response_model=List[RoleResponse])
+def read_all(db: Session = Depends(get_db)):
+    return get_roles(db)
 
 
-@router.get("/get_roles/")
-async def get_roles():
-    return nuevo_rol.get_roles()
+@router.get("/{role_id}", response_model=RoleResponse)
+def read_one(role_id: int, db: Session = Depends(get_db)):
+    return get_role(db, role_id)
 
 
-@router.put("/update_role/{role_id}")
-async def update_role(role_id: int, role: Role):
-    return nuevo_rol.update_role(role_id, role)
+@router.put("/{role_id}", response_model=RoleResponse)
+def update(role_id: int, data: RoleUpdate, db: Session = Depends(get_db)):
+    return update_role(db, role_id, data)
 
 
-@router.delete("/delete_role/{role_id}")
-async def delete_role(role_id: int):
-    nuevo_rol.delete_role(role_id)
-    return {"message": "Rol eliminado correctamente"}
+@router.delete("/{role_id}")
+def delete(role_id: int, db: Session = Depends(get_db)):
+    return delete_role(db, role_id)

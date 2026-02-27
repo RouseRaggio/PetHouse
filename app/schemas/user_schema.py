@@ -1,38 +1,45 @@
-# app/schemas/user_schema.py
-
 from pydantic import BaseModel, EmailStr
 from typing import Optional
 from datetime import datetime
 
 
+# =========================
+# CREATE
+# =========================
 
-class UserBase(BaseModel):
-    nombre: str
-    email: EmailStr
+class UserCreate(BaseModel):
     role_id: int
-
-
-
-class UserCreate(UserBase):
+    name: str
+    last_name: str
+    email: EmailStr
     password: str
 
 
+# =========================
+# UPDATE
+# =========================
 
 class UserUpdate(BaseModel):
-    nombre: Optional[str] = None
-    email: Optional[EmailStr] = None
-    password: Optional[str] = None
-    role_id: Optional[int] = None
-    activo: Optional[bool] = None
+    role_id: Optional[int]
+    name: Optional[str]
+    last_name: Optional[str]
+    email: Optional[EmailStr]
+    password: Optional[str]
+    is_active: Optional[bool]
 
 
+# =========================
+# RESPONSE
+# =========================
 
-
-class UserResponse(UserBase):
+class UserResponse(BaseModel):
     id: int
-    activo: bool
-    deleted_at: Optional[datetime] = None
+    role_id: int
+    name: str
+    last_name: str
+    email: EmailStr
+    is_active: bool
+    created_at: datetime
 
     class Config:
-        from_attributes = True  
- 
+        from_attributes = True

@@ -1,86 +1,46 @@
-from fastapi import APIRouter, UploadFile, File, Form, HTTPException
-import shutil
-import os
+from fastapi import APIRouter, Depends
+from sqlalchemy.orm import Session
+from typing import List
 
-from app.controllers.pet_controller import PetController
-
-router = APIRouter(
-    tags=["Mascotas"]
+from app.db.session import get_db
+from app.schemas.pet_schema import PetCreate, PetUpdate, PetResponse
+from app.controllers.pet_controller import (
+    create_pet,
+    get_pets,
+    get_pet,
+    update_pet,
+    delete_pet
 )
-pet_controller = PetController() 
 
-UPLOAD_FOLDER = "uploads"
-
-@router.post("/create_pet")
-async def create_pet(
-    nombre: str = Form(...),
-    especie: str = Form(...),
-    edad: int = Form(...),
-    descripcion: str = Form(...),
-    user_id: int = Form(...),
-    imagen: UploadFile = File(...)
-):
-    
-    if imagen.content_type not in ["image/jpeg", "image/png"]:
-        raise HTTPException(
-            status_code=400,
-            detail="Solo se permiten imágenes JPG o PNG"
-        )
-
-    if not os.path.exists(UPLOAD_FOLDER):
-        os.makedirs(UPLOAD_FOLDER)
-
-    file_path = os.path.join(UPLOAD_FOLDER, imagen.filename)
-
-    with open(file_path, "wb") as buffer:
-        shutil.copyfileobj(imagen.file, buffer)
-
-    pet_data = {
-        "nombre": nombre,
-        "especie": especie,
-        "edad": edad,
-        "descripcion": descripcion,
-        "imagen": imagen.filename,
-        "user_id": user_id
-    }
-
-    return pet_controller.create_pet(pet_data)
+router = APIRouter(prefix="/pets", tags=["Pets"])
 
 
-@router.get("/get_pets")
-async def get_pets():
-    return pet_controller.get_pets()
+# CREATE
+@router.post("/", response_model=PetResponse)
+def create(pet: PetCreate, db: Session = Depends(get_db)):
+    # Aquí luego conectaremos el usuario autenticado
+    return create_pet(db, pet, user_id=1)
 
 
-@router.put("/update_pet/{pet_id}/{user_id}")
-async def update_pet(
-    pet_id: int,
-    user_id: int,
-    nombre: str = Form(...),
-    especie: str = Form(...),
-    edad: int = Form(...),
-    descripcion: str = Form(...)
-):
-    pet_data = {
-        "nombre": nombre,
-        "especie": especie,
-        "edad": edad,
-        "descripcion": descripcion
-    }
-
-    result = pet_controller.update_pet(pet_id, pet_data, user_id)
-
-    if result is None:
-        raise HTTPException(status_code=404, detail="Mascota no encontrada")
-
-    return result
+# GET ALL
+@router.get("/", response_model=List[PetResponse])
+def read_all(db: Session = Depends(get_db)):
+    return get_pets(db)
 
 
-@router.delete("/delete_pet/{pet_id}/{user_id}")
-async def delete_pet(pet_id: int, user_id: int):
-    result = pet_controller.delete_pet(pet_id, user_id)
+# GET ONE
+@router.get("/{pet_id}", response_model=PetResponse)
+def read_one(pet_id: int, db: Session = Depends(get_db)):
+    return get_pet(db, pet_id)
 
-    if result is None:
-        raise HTTPException(status_code=404, detail="Mascota no encontrada")
 
-    return result
+# UPDATE
+@router.put("/{pet_id}", response_model=PetResponse)
+def update(pet_id: int, data: PetUpdate, db: Session = Depends(get_db)):
+    return update_pet(db, pet_id, data)
+
+
+# DELETE (Soft)
+@router.delete("/{pet_id}")
+def delete(pet_id: int, db: Session = Depends(get_db)):
+    return delete_pet(db, pet_id)

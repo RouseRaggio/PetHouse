@@ -1,156 +1,104 @@
-import psycopg2
+from sqlalchemy.orm import Session
 from fastapi import HTTPException
-from fastapi.encoders import jsonable_encoder
-from app.config.db_config import get_db_connection
-from app.models.pet_model import PetBase
+from datetime import datetime
+
+from app.models.pet_model import Pet
+from app.schemas.pet_schema import PetCreate, PetUpdate
 
 
-class PetController:
+# =========================
+# CREATE
+# =========================
 
-    def create_pet(self, pet: PetBase):
-        try:
-            conn = get_db_connection()
-            cursor = conn.cursor()
+def create_pet(db: Session, pet: PetCreate, user_id: int):
 
-            cursor.execute(
-                """
-                INSERT INTO mascotas (nombre, especie, edad, descripcion, imagen, user_id)
-                VALUES (%s, %s, %s, %s, %s, %s)
-                """,
-                (
-                    pet.nombre,
-                    pet.especie,
-                    pet.edad,
-                    pet.descripcion,
-                    pet.imagen,
-                    pet.user_id
-                )
-            )
+    new_pet = Pet(
+        publisher_id=user_id,
+        name=pet.name,
+        species=pet.species,
+        race=pet.race,
+        birth_date=pet.birth_date,
+        gender=pet.gender,
+        description=pet.description,
+        image_url=pet.image_url,
+        status="AVAILABLE"
+    )
 
-            conn.commit()
-            return {"resultado": "Mascota creada"}
+    db.add(new_pet)
+    db.commit()
+    db.refresh(new_pet)
 
-        except psycopg2.Error as err:
-            conn.rollback()
-            raise HTTPException(status_code=500, detail=str(err))
-
-        finally:
-            conn.close()
+    return new_pet
 
 
-    def get_pet(self, pet_id: int):
-        try:
-            conn = get_db_connection()
-            cursor = conn.cursor()
+# =========================
+# GET ALL
+# =========================
 
-            cursor.execute("SELECT * FROM mascotas WHERE pet_id = %s", (pet_id,))
-            result = cursor.fetchone()
+def get_pets(db: Session):
 
-            if result:
-                content = {
-                    "pet_id": result[0],
-                    "nombre": result[1],
-                    "especie": result[2],
-                    "edad": result[3],
-                    "descripcion": result[4],
-                    "imagen": result[5],
-                    "user_id": result[6]
-                }
-
-                return jsonable_encoder(content)
-
-            else:
-                raise HTTPException(status_code=404, detail="Mascota no encontrada")
-
-        except psycopg2.Error as err:
-            conn.rollback()
-            raise HTTPException(status_code=500, detail=str(err))
-
-        finally:
-            conn.close()
+    return db.query(Pet).filter(
+        Pet.deleted_at == None
+    ).all()
 
 
-    def get_pets(self):
-        try:
-            conn = get_db_connection()
-            cursor = conn.cursor()
+# =========================
+# GET ONE
+# =========================
 
-            cursor.execute("SELECT * FROM mascotas")
-            result = cursor.fetchall()
+def get_pet(db: Session, pet_id: int):
 
-            payload = []
+    pet = db.query(Pet).filter(
+        Pet.id == pet_id,
+        Pet.deleted_at == None
+    ).first()
 
-            for data in result:
-                content = {
-                    "pet_id": data[0],
-                    "nombre": data[1],
-                    "especie": data[2],
-                    "edad": data[3],
-                    "descripcion": data[4],
-                    "imagen": data[5],
-                    "user_id": data[6]
-                }
-                payload.append(content)
+    if not pet:
+        raise HTTPException(404, "Mascota no encontrada")
 
-            if result:
-                return {"resultado": jsonable_encoder(payload)}
-            else:
-                raise HTTPException(status_code=404, detail="No pets found")
-
-        except psycopg2.Error as err:
-            conn.rollback()
-            raise HTTPException(status_code=500, detail=str(err))
-
-        finally:
-            conn.close()
+    return pet
 
 
-    def update_pet(self, pet_id: int, pet: PetBase):
-        try:
-            conn = get_db_connection()
-            cursor = conn.cursor()
+# =========================
+# UPDATE
+# =========================
 
-            cursor.execute(
-                """
-                UPDATE mascotas
-                SET nombre=%s, especie=%s, edad=%s, descripcion=%s, imagen=%s, user_id=%s
-                WHERE pet_id=%s
-                """,
-                (
-                    pet.nombre,
-                    pet.especie,
-                    pet.edad,
-                    pet.descripcion,
-                    pet.imagen,
-                    pet.user_id,
-                    pet_id
-                )
-            )
+def update_pet(db: Session, pet_id: int, data: PetUpdate):
 
-            conn.commit()
-            return {"resultado": "Mascota actualizada"}
+    pet = db.query(Pet).filter(
+        Pet.id == pet_id,
+        Pet.deleted_at == None
+    ).first()
 
-        except psycopg2.Error as err:
-            conn.rollback()
-            raise HTTPException(status_code=500, detail=str(err))
+    if not pet:
+        raise HTTPException(404, "Mascota no encontrada")
 
-        finally:
-            conn.close()
+    update_data = data.dict(exclude_unset=True)
+
+    for key, value in update_data.items():
+        setattr(pet, key, value)
+
+    db.commit()
+    db.refresh(pet)
+
+    return pet
 
 
-    def delete_pet(self, pet_id: int):
-        try:
-            conn = get_db_connection()
-            cursor = conn.cursor()
+# =========================
+# SOFT DELETE
+# =========================
 
-            cursor.execute("DELETE FROM mascotas WHERE pet_id = %s", (pet_id,))
-            conn.commit()
+def delete_pet(db: Session, pet_id: int):
 
-            return {"resultado": "Mascota eliminada"}
+    pet = db.query(Pet).filter(
+        Pet.id == pet_id,
+        Pet.deleted_at == None
+    ).first()
 
-        except psycopg2.Error as err:
-            conn.rollback()
-            raise HTTPException(status_code=500, detail=str(err))
+    if not pet:
+        raise HTTPException(404, "Mascota no encontrada")
 
-        finally:
-            conn.close()
+    pet.deleted_at = datetime.utcnow()
+    db.commit()
+
+    return {"message": "Mascota eliminada lógicamente"}

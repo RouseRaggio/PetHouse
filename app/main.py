@@ -2,10 +2,13 @@ from fastapi import FastAPI
 from app.routes.user_routes import router as user_router
 from app.routes.pet_routes import router as pet_router
 from app.db.base import Base
-from app.models.user import User
-from app.models.role import Role
-from app.models.permission import Permission
-from app.models.role_permission import RolePermission
+from app.models.user_model import User
+from app.models.role_model import Role
+from app.models.permission_model import Permission
+from app.models.role_permission_model import RolePermission
+from app.models.pet_model import Pet
+from app.models.adoption_status_model import AdoptionStatus
+from app.models.adoption_model import Adoption
 from app.models import *
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles

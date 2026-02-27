@@ -2,28 +2,31 @@ from sqlalchemy.orm import Session
 from fastapi import HTTPException
 from datetime import datetime
 
-from app.models.user import User
+from app.models.user_model import User
 from app.schemas.user_schema import UserCreate, UserUpdate
 from app.core.security import hash_password
 
 
-
+# =========================
+# CREATE
+# =========================
 
 def create_user(db: Session, user: UserCreate):
 
-    existing_user = db.query(User).filter(
+    existing = db.query(User).filter(
         User.email == user.email,
         User.deleted_at == None
     ).first()
 
-    if existing_user:
-        raise HTTPException(status_code=400, detail="Email ya registrado")
+    if existing:
+        raise HTTPException(400, "Email ya registrado")
 
     new_user = User(
-        nombre=user.nombre,
+        role_id=user.role_id,
+        name=user.name,
+        last_name=user.last_name,
         email=user.email,
-        password=hash_password(user.password),
-        role_id=user.role_id
+        password=hash_password(user.password)
     )
 
     db.add(new_user)
@@ -33,13 +36,20 @@ def create_user(db: Session, user: UserCreate):
     return new_user
 
 
+# =========================
+# GET ALL
+# =========================
+
 def get_users(db: Session):
+
     return db.query(User).filter(
         User.deleted_at == None
     ).all()
 
 
-
+# =========================
+# GET ONE
+# =========================
 
 def get_user(db: Session, user_id: int):
 
@@ -49,14 +59,16 @@ def get_user(db: Session, user_id: int):
     ).first()
 
     if not user:
-        raise HTTPException(status_code=404, detail="Usuario no encontrado")
+        raise HTTPException(404, "Usuario no encontrado")
 
     return user
 
 
+# =========================
+# UPDATE
+# =========================
 
-
-def update_user(db: Session, user_id: int, user_data: UserUpdate):
+def update_user(db: Session, user_id: int, data: UserUpdate):
 
     user = db.query(User).filter(
         User.id == user_id,
@@ -64,28 +76,28 @@ def update_user(db: Session, user_id: int, user_data: UserUpdate):
     ).first()
 
     if not user:
-        raise HTTPException(status_code=404, detail="Usuario no encontrado")
+        raise HTTPException(404, "Usuario no encontrado")
 
-    # Validar email duplicado si cambia
-    if user_data.email and user_data.email != user.email:
-        existing_email = db.query(User).filter(
-            User.email == user_data.email,
+    update_data = data.dict(exclude_unset=True)
+
+    # Validar email duplicado
+    if "email" in update_data:
+        existing = db.query(User).filter(
+            User.email == update_data["email"],
+            User.id != user_id,
             User.deleted_at == None
         ).first()
 
-        if existing_email:
-            raise HTTPException(status_code=400, detail="Email ya registrado")
+        if existing:
+            raise HTTPException(400, "Email ya registrado")
 
-        user.email = user_data.email
+    if "password" in update_data:
+        update_data["password"] = hash_password(update_data["password"])
 
-    if user_data.nombre:
-        user.nombre = user_data.nombre
+    for key, value in update_data.items():
+        setattr(user, key, value)
 
-    if user_data.password:
-        user.password = hash_password(user_data.password)
-
-    if user_data.role_id:
-        user.role_id = user_data.role_id
+    user.updated_at = datetime.utcnow()
 
     db.commit()
     db.refresh(user)
@@ -93,6 +105,9 @@ def update_user(db: Session, user_id: int, user_data: UserUpdate):
     return user
 
 
+# =========================
+# SOFT DELETE
+# =========================
 
 def delete_user(db: Session, user_id: int):
 
@@ -102,16 +117,19 @@ def delete_user(db: Session, user_id: int):
     ).first()
 
     if not user:
-        raise HTTPException(status_code=404, detail="Usuario no encontrado")
+        raise HTTPException(404, "Usuario no encontrado")
 
     user.deleted_at = datetime.utcnow()
+    user.is_active = False
 
     db.commit()
 
     return {"message": "Usuario eliminado lógicamente"}
 
 
-
+# =========================
+# RESTORE
+# =========================
 
 def restore_user(db: Session, user_id: int):
 
@@ -121,9 +139,11 @@ def restore_user(db: Session, user_id: int):
     ).first()
 
     if not user:
-        raise HTTPException(status_code=404, detail="Usuario no encontrado o no está eliminado")
+        raise HTTPException(404, "Usuario no encontrado o no está eliminado")
 
     user.deleted_at = None
+    user.is_active = True
+
     db.commit()
 
     return {"message": "Usuario restaurado correctamente"}

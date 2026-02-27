@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, ForeignKey, DateTime, Boolean
+from sqlalchemy import Column, Integer, ForeignKey, DateTime, Boolean, String
 from sqlalchemy.orm import relationship
 from datetime import datetime
 from app.db.base import Base
@@ -10,12 +10,12 @@ class Adoption(Base):
 
     pet_id = Column(Integer, ForeignKey("pets.id"), nullable=False)
     adoptante_id = Column(Integer, ForeignKey("users.id"), nullable=False)
-    status_id = Column(Integer, ForeignKey("adoption_status_model.id"), nullable=False)
+    status_id = Column(Integer, ForeignKey("adoption_status.id"), nullable=False)
 
     fecha_solicitud = Column(DateTime, default=datetime.utcnow)
     fecha_respuesta = Column(DateTime)
 
-    cedula_url = Column(String)
+    cedula_url = Column(Integer)
     recibo_url = Column(String)
 
     quiere_tracker = Column(Boolean, default=False)

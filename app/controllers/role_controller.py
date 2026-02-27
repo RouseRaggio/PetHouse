@@ -1,128 +1,100 @@
-import psycopg2
+from sqlalchemy.orm import Session
 from fastapi import HTTPException
-from fastapi.encoders import jsonable_encoder
-from app.config.db_config import get_db_connection
-from app.models.role_model import RoleBase
+from datetime import datetime
+
+from app.models.role_model import Role
+from app.schemas.role_schema import RoleCreate, RoleUpdate
 
 
-class RoleController:
+# =========================
+# CREATE
+# =========================
 
-    def create_role(self, role: RoleBase):
-        try:
-            conn = get_db_connection()
-            cursor = conn.cursor()
+def create_role(db: Session, data: RoleCreate):
 
-            cursor.execute(
-                "INSERT INTO roles (nombre, descripcion) VALUES (%s, %s)",
-                (role.nombre, role.descripcion)
-            )
+    existing = db.query(Role).filter(
+        Role.name == data.name,
+        Role.deleted_at == None
+    ).first()
 
-            conn.commit()
-            return {"resultado": "Rol creado"}
+    if existing:
+        raise HTTPException(400, "Rol ya existe")
 
-        except psycopg2.Error as err:
-            conn.rollback()
-            raise HTTPException(status_code=500, detail=str(err))
+    role = Role(name=data.name)
 
-        finally:
-            conn.close()
+    db.add(role)
+    db.commit()
+    db.refresh(role)
 
-
-    def get_role(self, role_id: int):
-        try:
-            conn = get_db_connection()
-            cursor = conn.cursor()
-
-            cursor.execute("SELECT * FROM roles WHERE id = %s", (role_id,))
-            result = cursor.fetchone()
-
-            if result:
-                content = {
-                    "id": result[0],
-                    "nombre": result[1],
-                    "descripcion": result[2]
-                }
-
-                json_data = jsonable_encoder(content)
-                return json_data
-            else:
-                raise HTTPException(status_code=404, detail="Role not found")
-
-        except psycopg2.Error as err:
-            conn.rollback()
-            raise HTTPException(status_code=500, detail=str(err))
-
-        finally:
-            conn.close()
+    return role
 
 
-    def get_roles(self):
-        try:
-            conn = get_db_connection()
-            cursor = conn.cursor()
+# =========================
+# GET ALL
+# =========================
 
-            cursor.execute("SELECT * FROM roles")
-            result = cursor.fetchall()
+def get_roles(db: Session):
 
-            payload = []
-
-            for data in result:
-                content = {
-                    "id": data[0],
-                    "nombre": data[1],
-                    "descripcion": data[2]
-                }
-                payload.append(content)
-
-            json_data = jsonable_encoder(payload)
-
-            if result:
-                return {"resultado": json_data}
-            else:
-                raise HTTPException(status_code=404, detail="No roles found")
-
-        except psycopg2.Error as err:
-            conn.rollback()
-            raise HTTPException(status_code=500, detail=str(err))
-
-        finally:
-            conn.close()
+    return db.query(Role).filter(
+        Role.deleted_at == None
+    ).all()
 
 
-    def update_role(self, role_id: int, role: Role):
-        try:
-            conn = get_db_connection()
-            cursor = conn.cursor()
+# =========================
+# GET ONE
+# =========================
 
-            cursor.execute(
-                "UPDATE roles SET nombre=%s, descripcion=%s WHERE id=%s",
-                (role.nombre, role.descripcion, role_id)
-            )
+def get_role(db: Session, role_id: int):
 
-            conn.commit()
-            return {"resultado": "Rol actualizado"}
+    role = db.query(Role).filter(
+        Role.id == role_id,
+        Role.deleted_at == None
+    ).first()
 
-        except psycopg2.Error as err:
-            conn.rollback()
-            raise HTTPException(status_code=500, detail=str(err))
+    if not role:
+        raise HTTPException(404, "Rol no encontrado")
 
-        finally:
-            conn.close()
+    return role
 
 
-    def delete_role(self, role_id: int):
-        try:
-            conn = get_db_connection()
-            cursor = conn.cursor()
+# =========================
+# UPDATE
+# =========================
 
-            cursor.execute("DELETE FROM roles WHERE id = %s", (role_id,))
+def update_role(db: Session, role_id: int, data: RoleUpdate):
 
-            conn.commit()
-            return {"resultado": "Rol eliminado"}
+    role = db.query(Role).filter(
+        Role.id == role_id,
+        Role.deleted_at == None
+    ).first()
 
-        except psycopg2.Error as err:
-            conn.rollback()
-            raise HTTPException(status_code=500, detail=str(err))
+    if not role:
+        raise HTTPException(404, "Rol no encontrado")
 
-        finally:
-            conn.close()
+    if data.name:
+        role.name = data.name
+
+    db.commit()
+    db.refresh(role)
+
+    return role
+
+
+# =========================
+# SOFT DELETE
+# =========================
+
+def delete_role(db: Session, role_id: int):
+
+    role = db.query(Role).filter(
+        Role.id == role_id,
+        Role.deleted_at == None
+    ).first()
+
+    if not role:
+        raise HTTPException(404, "Rol no encontrado")
+
+    role.deleted_at = datetime.utcnow()
+    db.commit()
+
+    return {"message": "Rol eliminado lógicamente"}
