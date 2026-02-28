@@ -1,17 +1,23 @@
-from sqlalchemy import Column, Integer, ForeignKey, DateTime, DECIMAL
+from sqlalchemy import Column, Integer, Float, String, ForeignKey, DateTime
 from sqlalchemy.orm import relationship
 from datetime import datetime
 from app.db.base import Base
+
 
 class TrackerLocation(Base):
     __tablename__ = "tracker_locations"
 
     id = Column(Integer, primary_key=True)
-    tracker_id = Column(Integer, ForeignKey("trackers.id"), nullable=False)
 
-    latitud = Column(DECIMAL(9,6), nullable=False)
-    longitud = Column(DECIMAL(9,6), nullable=False)
+    adoption_id = Column(Integer, ForeignKey("adoptions.id"))
+    recorded_by = Column(Integer, ForeignKey("users.id"))
 
-    fecha_registro = Column(DateTime, default=datetime.utcnow)
+    latitude = Column(Float, nullable=False)
+    longitude = Column(Float, nullable=False)
 
-    tracker = relationship("Tracker", back_populates="locations")
+    address = Column(String, nullable=True)
+
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    adoption = relationship("Adoption")
+    user = relationship("User")

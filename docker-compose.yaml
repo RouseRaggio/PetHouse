@@ -2,12 +2,15 @@ version: "3.10"
 
 services:
   web:
+    
     build: .
-    container_name: fastapi_app
+    container_name: fastapi_app_pet_house
     ports:
       - "8000:8000"
     volumes:
       - ./:/app
+    env_file:
+      - .env 
     environment:
       DATABASE_URL: postgresql://postgres:secret@postgres:5432/prueba
     depends_on:
@@ -15,7 +18,7 @@ services:
 
   postgres:
     image: postgres:16
-    container_name: postgres_sql
+    container_name: postgres_sql_pet_house
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: secret
