@@ -1,8 +1,6 @@
 <script>
 	import { onMount } from 'svelte';
-	import 'bootstrap/dist/css/bootstrap.min.css';
 	import { fly } from 'svelte/transition';
-	import '../../app.css';
 	export let showLogin = true;
 	export let variant = 'default';
 
@@ -43,7 +41,7 @@
 				</li>
 
 				<li class="nav-item">
-					<a class="nav-link nav-custom" href="/admin">Adoptar</a>
+					<a class="nav-link nav-custom" href="/admin">Vista Admin</a>
 				</li>
 
 				<li class="nav-item">

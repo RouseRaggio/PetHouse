@@ -8,6 +8,7 @@
 	];
 </script>
 
+<Navbar />
 <section class="container my-4">
 	<h2 class="mb-4 text-center">Mis Rastreadores</h2>
 

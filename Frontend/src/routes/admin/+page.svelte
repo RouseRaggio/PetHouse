@@ -1,6 +1,6 @@
 <script>
 	import { fade } from 'svelte/transition';
-	import './admin.css';
+	import PowerBI from '$lib/components/PowerBIReport.svelte';
 	// Datos simulados
 	export let users = [
 		{ id: 1, name: 'Juan Perez', email: 'juan@example.com', role: 'Admin', status: 'Activo' },
@@ -129,18 +129,13 @@
 	</table>
 
 	<!-- Área para gráficas o reportes -->
-	<div class="card mt-5 p-3">
-		<h5>Reportes de Usuarios</h5>
-		<!-- svelte-ignore a11y_missing_attribute -->
-		<iframe
-			width="100%"
-			height="400px"
-			src="URL_DE_TU_REPORTE_POWERBI_USUARIOS"
-			frameborder="0"
-			allowFullScreen="true"
-		>
-		</iframe>
-	</div>
+	<script>
+		import PowerBIReport from '$lib/components/PowerBIReport.svelte';
+	</script>
+
+	<section class="container">
+		<PowerBI title="Reportes de Usuarios" src="..." height="400px" />
+	</section>
 </section>
 
 <style>

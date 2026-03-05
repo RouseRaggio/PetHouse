@@ -1,6 +1,7 @@
 <script>
 	import { on } from 'svelte/events';
 	import { fade, fly } from 'svelte/transition';
+	import Navbar from '$lib/components/Navbar.svelte';
 	// svelte-ignore export_let_unused
 	export let data;
 
@@ -21,6 +22,7 @@
 	}
 </script>
 
+<Navbar />
 <section class="login-wrapper" in:fade>
 	<div class="login-card px-4" in:fly={{ y: 30, duration: 400, opacity: 0 }}>
 		<h2>{isRegister ? 'Crear cuenta' : 'Bienvenido'}</h2>
@@ -86,7 +88,8 @@
 
 <style>
 	.login-wrapper {
-		min-height: 85vh;
+		margin-top: 1.5rem;
+		min-height: 100vh;
 		display: flex;
 		justify-content: center;
 		align-items: center;
@@ -118,7 +121,6 @@
 	.input-group {
 		display: flex;
 		flex-direction: column;
-		margin-bottom: 2.5rem;
 		margin-bottom: 1.2rem;
 		text-align: left;
 	}
@@ -127,7 +129,6 @@
 		font-size: 1rem;
 		font-weight: 600;
 		display: block;
-		margin-bottom: 0rem;
 		margin-bottom: 0.2rem;
 	}
 

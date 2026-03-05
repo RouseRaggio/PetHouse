@@ -7,12 +7,12 @@
 	import '../app.css';
 
 	export let data;
-    let selectedPet = null;
+	let selectedPet = null;
 
 	function openModal(pet) {
 		selectedPet = pet;
 	}
-    
+
 	function closeModal() {
 		selectedPet = null;
 	}
@@ -31,6 +31,7 @@
 	);
 </script>
 
+<Navbar />
 <section class="hero-section mt-10 text-white text-center d-flex align-items-center">
 	<div class="overlay"></div>
 
@@ -63,11 +64,11 @@
 			<PetModal {selectedPet} on:close={closeModal} />
 		{/if}
 	</div>
-	<br>
-	<br>
+	<br />
+	<br />
 </section>
 
-<section class="text-center py-5 text-black bg-red"> 
+<section class="text-center py-5 text-black bg-red">
 	<div class="container">
 		<h3>¿Tienes una mascota para dar en adopción?</h3>
 		<p>Publica su información y ayúdale a encontrar un nuevo hogar.</p>
@@ -75,8 +76,5 @@
 	</div>
 </section>
 
-<!--  
-<footer class="bg-dark text-center text-white py-3">
-    
-    <small>© 2026 PetHouse</small>
-</footer>-->
+<style>
+</style>
