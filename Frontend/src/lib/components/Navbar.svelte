@@ -4,7 +4,7 @@
 	import { fly } from 'svelte/transition';
 	import '../../app.css';
 	export let showLogin = true;
-	export let variant = "default"; 
+	export let variant = 'default';
 
 	let scrolled = false;
 
@@ -21,10 +21,9 @@
 <nav
 	in:fly={{ y: -60, duration: 600 }}
 	class="navbar navbar-expand-lg fixed-top {scrolled ? 'navbar-scrolled' : 'navbar-top'}"
-	class:login-navbar={variant === "login"}
+	class:login-navbar={variant === 'login'}
 >
 	<div class="container">
-	
 		<a class="navbar-brand brand-logo" href="/"> PetHouse </a>
 
 		<!-- svelte-ignore a11y_consider_explicit_label -->
@@ -44,7 +43,7 @@
 				</li>
 
 				<li class="nav-item">
-					<a class="nav-link nav-custom" href="/adoptar">Adoptar</a>
+					<a class="nav-link nav-custom" href="/admin">Adoptar</a>
 				</li>
 
 				<li class="nav-item">
@@ -53,7 +52,7 @@
 
 				<li class="nav-item ms-3">
 					{#if showLogin}
-							<a href="/login" class="nav-link nav-custom">Login</a>
+						<a href="/login" class="nav-link nav-custom">Login</a>
 					{/if}
 				</li>
 			</ul>

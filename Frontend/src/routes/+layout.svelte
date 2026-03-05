@@ -1,14 +1,15 @@
 <script>
-	import { page } from "$app/stores";
-	import Navbar from "$lib/components/Navbar.svelte";
+	import { page } from '$app/stores';
+	import Navbar from '$lib/components/Navbar.svelte';
 
-	$: isLogin = $page.url.pathname === "/login";
+	$: path = $page.url.pathname;
+
+	$: isLogin = path === '/login';
+	$: isAdmin = path.startsWith('/admin');
 </script>
 
-{#if isLogin}
-	<Navbar showLogin={false} fixed={false} />
-{:else}
-	<Navbar showLogin={true} fixed={true} />
+{#if !isAdmin}
+	<Navbar showLogin={!isLogin} />
 {/if}
 
 <slot />
