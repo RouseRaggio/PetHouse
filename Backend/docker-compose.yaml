@@ -4,7 +4,7 @@ services:
   web:
     
     build: .
-    container_name: fastapi_app_pet_house
+    container_name: fastapi_app_pet
     ports:
       - "8000:8000"
     volumes:
@@ -18,7 +18,7 @@ services:
 
   postgres:
     image: postgres:16
-    container_name: postgres_sql_pet_house
+    container_name: postgres_sql_pet
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: secret
