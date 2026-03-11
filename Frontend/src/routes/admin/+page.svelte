@@ -7,7 +7,14 @@
 		{ id: 2, name: 'Maria Gomez', email: 'maria@example.com', role: 'Usuario', status: 'Inactivo' }
 	];
 
-	let newUser = { name: '', email: '', password: '', role: 'Usuario', status: 'Activo' };
+	let newUser = {
+		name: '',
+		apellido: '',
+		email: '',
+		password: '',
+		role: 'Usuario',
+		status: 'Activo'
+	};
 	let editUserId = null;
 
 	function addUser() {
@@ -20,7 +27,14 @@
 
 		users = [...users, { ...newUser, id }];
 
-		newUser = { name: '', email: '', password: '', role: 'Usuario', status: 'Activo' };
+		newUser = {
+			name: '',
+			email: '',
+			apellido: '',
+			password: '',
+			role: 'Usuario',
+			status: 'Activo'
+		};
 	}
 
 	function deleteUser(id) {
@@ -63,7 +77,7 @@
 			<ul class="navbar-nav me-auto mb-2 mb-lg-0">
 				<!-- <li class="nav-item"><a class="nav-link" href="/admin/mascotas">Mascotas</a></li> -->
 				<li class="nav-item"><a class="nav-link active" href="/admin">Usuarios</a></li>
-				<!--<li class="nav-item"><a class="nav-link" href="/admin/rastreadores">Rastreadores</a></li>-->
+				<li class="nav-item"><a class="nav-link" href="../">Inicio</a></li>
 			</ul>
 		</div>
 	</div>
@@ -76,13 +90,21 @@
 	<div class="card mb-4 p-3">
 		<h5>{editUserId ? 'Editar Usuario' : 'Agregar Nuevo Usuario'}</h5>
 		<div class="row g-2">
-			<div class="col-md-3">
+			<div class="col-md-2">
 				<input
 					type="text"
 					class="form-control"
 					placeholder="Nombre"
 					bind:value={newUser.name}
 					required
+				/>
+			</div>
+			<div class="col-md-2">
+				<input
+					type="text"
+					class="form-control"
+					placeholder="Apellido"
+					bind:value={newUser.apellido}
 				/>
 			</div>
 			<div class="col-md-3">
@@ -94,6 +116,7 @@
 					required
 				/>
 			</div>
+
 			<div class="col-md-2">
 				<input
 					type="password"
@@ -136,6 +159,7 @@
 		<thead class="table-dark">
 			<tr>
 				<th>Nombre</th>
+				<th>Apellido</th>
 				<th>Correo</th>
 				<th>Contraseña</th>
 				<th>Rol</th>
@@ -147,6 +171,7 @@
 			{#each users as u (u.id)}
 				<tr>
 					<td>{u.name}</td>
+					<td>{u.apellido}</td>
 					<td>{u.email}</td>
 					<td>{u.password}</td>
 					<td>{u.role}</td>
