@@ -18,7 +18,7 @@
 
 <nav
 	in:fly={{ y: -60, duration: 600 }}
-	class="navbar navbar-expand-lg fixed-top {scrolled ? 'navbar-scrolled' : 'navbar-top'}"
+	class="navbar navbar-expand-lg {scrolled ? 'navbar-scrolled' : 'navbar-top'}"
 	class:login-navbar={variant === 'login'}
 >
 	<div class="container">

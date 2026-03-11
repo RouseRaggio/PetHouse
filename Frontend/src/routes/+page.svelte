@@ -72,7 +72,7 @@
 	<div class="container">
 		<h3>¿Tienes una mascota para dar en adopción?</h3>
 		<p>Publica su información y ayúdale a encontrar un nuevo hogar.</p>
-		<a href="/publicar" class="btn btn-lg btn-warning">Publicar Mascota</a>
+		<a href="/usuarios/publicar" class="btn btn-lg btn-warning">Publicar Mascota</a>
 	</div>
 </section>
 

@@ -5,7 +5,6 @@
 	export let users = [
 		{ id: 1, name: 'Juan Perez', email: 'juan@example.com', role: 'Admin', status: 'Activo' },
 		{ id: 2, name: 'Maria Gomez', email: 'maria@example.com', role: 'Usuario', status: 'Inactivo' }
-		// ...otros usuarios
 	];
 
 	let newUser = { name: '', email: '', role: 'Usuario', status: 'Activo' };
@@ -55,9 +54,9 @@
 		</button>
 		<div class="collapse navbar-collapse" id="adminNav">
 			<ul class="navbar-nav me-auto mb-2 mb-lg-0">
-				<li class="nav-item"><a class="nav-link" href="/admin/mascotas">Mascotas</a></li>
+				<!-- <li class="nav-item"><a class="nav-link" href="/admin/mascotas">Mascotas</a></li> -->
 				<li class="nav-item"><a class="nav-link active" href="/admin/usuarios">Usuarios</a></li>
-				<li class="nav-item"><a class="nav-link" href="/admin/rastreadores">Rastreadores</a></li>
+				<!--<li class="nav-item"><a class="nav-link" href="/admin/rastreadores">Rastreadores</a></li>-->
 			</ul>
 		</div>
 	</div>
@@ -134,7 +133,11 @@
 	</script>
 
 	<section class="container">
-		<PowerBI title="Reportes de Usuarios" src="..." height="400px" />
+		<PowerBI
+			title="Mascotas por especie"
+			src="https://app.powerbi.com/view?r=eyJrIjoiZDc1YWY1NjYtMzNiMi00NzA0LTljMDItYzBmZTBiZjQ0MTNlIiwidCI6IjFlOWFhYmU4LTY3ZjgtNGYxYy1hMzI5LWE3NTRlOTI0OTlhZSIsImMiOjR9"
+			height="600px"
+		/>
 	</section>
 </section>
 
