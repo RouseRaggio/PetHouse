@@ -41,10 +41,6 @@
 				</li>
 
 				<li class="nav-item">
-					<a class="nav-link nav-custom" href="/admin">Vista Admin</a>
-				</li>
-
-				<li class="nav-item">
 					<a class="nav-link nav-custom" href="/usuarios/rastreador">Rastreador</a>
 				</li>
 

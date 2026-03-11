@@ -11,9 +11,16 @@
 	let editUserId = null;
 
 	function addUser() {
+		if (!newUser.name.trim() || !newUser.email.trim() || !newUser.password?.trim()) {
+			alert('Debes llenar todos los campos obligatorios');
+			return;
+		}
+
 		const id = users.length ? Math.max(...users.map((u) => u.id)) + 1 : 1;
+
 		users = [...users, { ...newUser, id }];
-		newUser = { name: '', email: '', role: 'Usuario', status: 'Activo' };
+
+		newUser = { name: '', email: '', password: '', role: 'Usuario', status: 'Activo' };
 	}
 
 	function deleteUser(id) {
@@ -70,10 +77,22 @@
 		<h5>{editUserId ? 'Editar Usuario' : 'Agregar Nuevo Usuario'}</h5>
 		<div class="row g-2">
 			<div class="col-md-3">
-				<input type="text" class="form-control" placeholder="Nombre" bind:value={newUser.name} />
+				<input
+					type="text"
+					class="form-control"
+					placeholder="Nombre"
+					bind:value={newUser.name}
+					required
+				/>
 			</div>
 			<div class="col-md-3">
-				<input type="email" class="form-control" placeholder="Correo" bind:value={newUser.email} />
+				<input
+					type="email"
+					class="form-control"
+					placeholder="Correo"
+					bind:value={newUser.email}
+					required
+				/>
 			</div>
 			<div class="col-md-2">
 				<input
@@ -101,7 +120,13 @@
 				<button class="btn btn-success me-2" on:click={saveEdit}>Guardar</button>
 				<button class="btn btn-secondary" on:click={cancelEdit}>Cancelar</button>
 			{:else}
-				<button class="btn btn-primary" on:click={addUser}>Agregar Usuario</button>
+				<button
+					class="btn btn-primary"
+					on:click={addUser}
+					disabled={!newUser.name || !newUser.email || !newUser.password}
+				>
+					Agregar Usuario
+				</button>
 			{/if}
 		</div>
 	</div>

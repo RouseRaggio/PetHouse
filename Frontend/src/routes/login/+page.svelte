@@ -2,6 +2,7 @@
 	import { on } from 'svelte/events';
 	import { fade, fly } from 'svelte/transition';
 	import Navbar from '$lib/components/Navbar.svelte';
+	import { goto } from '$app/navigation';
 	// svelte-ignore export_let_unused
 	export let data;
 
@@ -18,6 +19,13 @@
 			console.log('Intentando registro:', { nombre, apellido, email, password });
 		} else {
 			console.log('Intentando login:', { email, password });
+		}
+	}
+	function loginAdmin() {
+		if (email === 'admin@gmail.com') {
+			goto('/admin');
+		} else {
+			alert('Este correo no tiene acceso de administrador');
 		}
 	}
 </script>
@@ -71,6 +79,9 @@
 			<button class="btn-login">
 				{isRegister ? 'Registrarse' : 'Iniciar Sesión'}
 			</button>
+			<button id="admin-login" type="button" class="btn-login" on:click={loginAdmin}>
+				Iniciar Sesión como administrador
+			</button>
 		</form>
 
 		<p class="footer-text">
@@ -88,13 +99,11 @@
 
 <style>
 	.login-wrapper {
-		margin-top: 1.5rem;
 		min-height: 100vh;
 		display: flex;
 		justify-content: center;
 		align-items: center;
 		background: linear-gradient(135deg, #ecd75f, #b89a14);
-		padding: 1rem;
 	}
 
 	.login-card {
@@ -181,6 +190,7 @@
 		cursor: pointer;
 		transition: all 0.25s ease;
 		box-shadow: 0 8px 20px rgba(13, 110, 253, 0.3);
+		margin-top: 0.5rem;
 	}
 
 	.btn-login:hover {
@@ -208,5 +218,10 @@
 		.login-card {
 			padding: 2rem;
 		}
+	}
+	#admin-login {
+		background: linear-gradient(135deg, #b89a14, #ecd75f);
+		color: #333;
+		box-shadow: 0 8px 20px rgba(184, 154, 20, 0.3);
 	}
 </style>
