@@ -7,7 +7,7 @@
 		{ id: 2, name: 'Maria Gomez', email: 'maria@example.com', role: 'Usuario', status: 'Inactivo' }
 	];
 
-	let newUser = { name: '', email: '', role: 'Usuario', status: 'Activo' };
+	let newUser = { name: '', email: '', password: '', role: 'Usuario', status: 'Activo' };
 	let editUserId = null;
 
 	function addUser() {
@@ -55,7 +55,7 @@
 		<div class="collapse navbar-collapse" id="adminNav">
 			<ul class="navbar-nav me-auto mb-2 mb-lg-0">
 				<!-- <li class="nav-item"><a class="nav-link" href="/admin/mascotas">Mascotas</a></li> -->
-				<li class="nav-item"><a class="nav-link active" href="/admin/usuarios">Usuarios</a></li>
+				<li class="nav-item"><a class="nav-link active" href="/admin">Usuarios</a></li>
 				<!--<li class="nav-item"><a class="nav-link" href="/admin/rastreadores">Rastreadores</a></li>-->
 			</ul>
 		</div>
@@ -72,8 +72,16 @@
 			<div class="col-md-3">
 				<input type="text" class="form-control" placeholder="Nombre" bind:value={newUser.name} />
 			</div>
-			<div class="col-md-4">
+			<div class="col-md-3">
 				<input type="email" class="form-control" placeholder="Correo" bind:value={newUser.email} />
+			</div>
+			<div class="col-md-2">
+				<input
+					type="password"
+					class="form-control"
+					placeholder="Contraseña"
+					bind:value={newUser.password}
+				/>
 			</div>
 			<div class="col-md-2">
 				<select class="form-select" bind:value={newUser.role}>
@@ -81,7 +89,7 @@
 					<option>Usuario</option>
 				</select>
 			</div>
-			<div class="col-md-3">
+			<div class="col-md-1">
 				<select class="form-select" bind:value={newUser.status}>
 					<option>Activo</option>
 					<option>Inactivo</option>
@@ -104,6 +112,7 @@
 			<tr>
 				<th>Nombre</th>
 				<th>Correo</th>
+				<th>Contraseña</th>
 				<th>Rol</th>
 				<th>Estado</th>
 				<th>Acciones</th>
@@ -114,6 +123,7 @@
 				<tr>
 					<td>{u.name}</td>
 					<td>{u.email}</td>
+					<td>{u.password}</td>
 					<td>{u.role}</td>
 					<td>{u.status}</td>
 					<td>
@@ -127,16 +137,12 @@
 		</tbody>
 	</table>
 
-	<!-- Área para gráficas o reportes -->
-	<script>
-		import PowerBIReport from '$lib/components/PowerBIReport.svelte';
-	</script>
-
 	<section class="container">
 		<PowerBI
-			title="Mascotas por especie"
-			src="https://app.powerbi.com/view?r=eyJrIjoiZDc1YWY1NjYtMzNiMi00NzA0LTljMDItYzBmZTBiZjQ0MTNlIiwidCI6IjFlOWFhYmU4LTY3ZjgtNGYxYy1hMzI5LWE3NTRlOTI0OTlhZSIsImMiOjR9"
+			title="Reporte"
+			src="https://app.powerbi.com/view?r=eyJrIjoiZjU0ZWNhMjEtYjIyMy00MTllLTlmZmYtOTNhZjI0ZjA4MjY0IiwidCI6IjFlOWFhYmU4LTY3ZjgtNGYxYy1hMzI5LWE3NTRlOTI0OTlhZSIsImMiOjR9"
 			height="600px"
+			width="100%"
 		/>
 	</section>
 </section>
