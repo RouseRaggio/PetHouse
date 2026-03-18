@@ -1,5 +1,5 @@
 <script>
-	import Navbar from '$lib/components/Navbar.svelte';
+	import AdminNavbar from '$lib/components/AdminNavbar.svelte';
 
 	// Datos del rastreador (pueden venir luego de su base de datos)
 	let trackers = [
@@ -13,10 +13,10 @@
 	];
 
 	// URL del panel del GPS ya logueado
-	let gpsUrl = "https://www.365gps.net/platform/#/";
+	let gpsUrl = 'https://www.365gps.net/platform/#/';
 </script>
 
-<Navbar />
+<AdminNavbar />
 
 <section class="container my-4">
 	<h2 class="mb-4 text-center">Mis Rastreadores</h2>
@@ -44,7 +44,8 @@
 				width="100%"
 				height="500"
 				style="border:0;"
-				loading="lazy">
+				loading="lazy"
+			>
 			</iframe>
 		</div>
 	</div>
