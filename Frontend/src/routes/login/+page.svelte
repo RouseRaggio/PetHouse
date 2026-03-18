@@ -1,5 +1,5 @@
 <script>
-    import { createUser } from "../../api/user_service.js";
+	import { createUser } from '../../api/user_service.js';
 	import { on } from 'svelte/events';
 	import { fade, fly } from 'svelte/transition';
 	import Navbar from '$lib/components/Navbar.svelte';
@@ -15,51 +15,49 @@
 	let password = '';
 	let showPassword = false;
 
-async function handleSubmit() {
-
-	if (isRegister) {
-
-		const userData = {
-			role_id: 1,
-			name: nombre,
-			last_name: apellido,
-			email: email,
-			password: password
-		};
-
-		console.log("Enviando:", userData);
-
-		try {
-
-			const result = await createUser(userData);
-
-			console.log("Usuario creado:", result);
-
-			alert("Usuario registrado correctamente");
-
-			// limpiar campos
-			nombre = "";
-			apellido = "";
-			email = "";
-			password = "";
-
-			// volver al login
-			isRegister = false;
-
-		} catch (error) {
-
-			console.error(error);
-
-			alert("Error registrando usuario");
-
+	function loginAdmin() {
+		if (email === 'admin@gmail.com') {
+			goto('/admin');
+		} else {
+			alert('Este correo no tiene acceso de administrador');
 		}
-
-	} else {
-
-		console.log("Intentando login:", { email, password });
-
 	}
-}
+	async function handleSubmit() {
+		if (isRegister) {
+			const userData = {
+				role_id: 1,
+				name: nombre,
+				last_name: apellido,
+				email: email,
+				password: password
+			};
+
+			console.log('Enviando:', userData);
+
+			try {
+				const result = await createUser(userData);
+
+				console.log('Usuario creado:', result);
+
+				alert('Usuario registrado correctamente');
+
+				// limpiar campos
+				nombre = '';
+				apellido = '';
+				email = '';
+				password = '';
+
+				// volver al login
+				isRegister = false;
+			} catch (error) {
+				console.error(error);
+
+				alert('Error registrando usuario');
+			}
+		} else {
+			console.log('Intentando login:', { email, password });
+		}
+	}
 </script>
 
 <Navbar />
