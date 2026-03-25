@@ -10,7 +10,7 @@ export async function load() {
 				gender: 'Hembra',
 				description: 'Perro amigable y juguetón',
 				status: 'Disponible',
-				image_url: 'https://placedog.net/400'
+				image_url: 'https://loremflickr.com/400/400/dog?lock=1'
 			},
 			{
 				id: 2,
@@ -21,7 +21,7 @@ export async function load() {
 				gender: 'Macho',
 				description: 'Perro muy leal y protector',
 				status: 'Disponible',
-				image_url: 'https://placedog.net/401'
+				image_url: 'https://loremflickr.com/400/400/dog?lock=2'
 			},
 			{
 				id: 3,
@@ -32,7 +32,7 @@ export async function load() {
 				gender: 'Macho',
 				description: 'Perro tranquilo al que le gusta dormir',
 				status: 'Disponible',
-				image_url: 'https://placedog.net/402'
+				image_url: 'https://loremflickr.com/400/400/dog?lock=3'
 			},
 			{
 				id: 4,
@@ -43,7 +43,7 @@ export async function load() {
 				gender: 'Hembra',
 				description: 'Perro muy cariñoso y lleno de energía',
 				status: 'Disponible',
-				image_url: 'https://placedog.net/403'
+				image_url: 'https://loremflickr.com/400/400/dog?lock=4'
 			},
 			{
 				id: 5,
@@ -54,7 +54,7 @@ export async function load() {
 				gender: 'Macho',
 				description: 'Le encanta correr y el clima frío',
 				status: 'Disponible',
-				image_url: 'https://placedog.net/404'
+				image_url: 'https://loremflickr.com/400/400/dog?lock=5'
 			},
 			{
 				id: 6,
@@ -65,7 +65,7 @@ export async function load() {
 				gender: 'Hembra',
 				description: 'Perro curioso con un gran olfato',
 				status: 'Disponible',
-				image_url: 'https://placedog.net/405'
+				image_url: 'https://loremflickr.com/400/400/dog?lock=6'
 			},
 			{
 				id: 7,
@@ -76,7 +76,7 @@ export async function load() {
 				gender: 'Macho',
 				description: 'Perro fuerte pero muy noble',
 				status: 'Disponible',
-				image_url: 'https://placedog.net/406'
+				image_url: 'https://loremflickr.com/400/400/dog?lock=7'
 			},
 			{
 				id: 8,
@@ -87,7 +87,7 @@ export async function load() {
 				gender: 'Macho',
 				description: 'Gato muy juguetón y expresivo',
 				status: 'Disponible',
-				image_url: 'https://cdn2.thecatapi.com/images/0XYvRd7oD.jpg'
+				image_url: 'https://loremflickr.com/400/400/cat?lock=1'
 			},
 			{
 				id: 9,
@@ -98,7 +98,7 @@ export async function load() {
 				gender: 'Hembra',
 				description: 'Gata tranquila que disfruta de las caricias',
 				status: 'Disponible',
-				image_url: 'https://cdn2.thecatapi.com/images/MTY3ODIyMQ.jpg'
+				image_url: 'https://loremflickr.com/400/400/cat?lock=2'
 			},
 			{
 				id: 10,
@@ -109,7 +109,7 @@ export async function load() {
 				gender: 'Macho',
 				description: 'Gato grande con una personalidad muy amigable',
 				status: 'Disponible',
-				image_url: 'https://cdn2.thecatapi.com/images/bpc.jpg'
+				image_url: 'https://loremflickr.com/400/400/cat?lock=3'
 			}
 		]
 	};
