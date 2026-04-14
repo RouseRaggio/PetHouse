@@ -39,7 +39,12 @@ class UserResponse(BaseModel):
     last_name: str
     email: EmailStr
     is_active: bool
-    created_at: datetime
+    created_at: Optional[datetime]
 
     class Config:
         from_attributes = True
+
+
+class LoginRequest(BaseModel):
+    email: str
+    password: str

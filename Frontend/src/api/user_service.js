@@ -26,6 +26,39 @@ export async function getUser(id) {
 	return await response.json();
 }
 
+/*
+   GET USER BY EMAIL
+========================= */
+export async function getUserByEmail(email) {
+	const response = await fetch(`${API_URL}/users/email/${email}`);
+
+	if (!response.ok) {
+		throw new Error('Usuario no encontrado');
+	}
+
+	return await response.json();
+}
+
+/* =========================
+   LOGIN USER
+========================= */
+export async function loginUser(email, password) {
+	const response = await fetch(`${API_URL}/users/login`, {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/json'
+		},
+		body: JSON.stringify({ email, password })
+		
+	});
+
+	if (!response.ok) {
+		throw new Error('Credenciales incorrectas');
+	}
+
+	return await response.json();
+}
+
 /* =========================
    CREATE USER
 ========================= */

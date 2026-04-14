@@ -1,10 +1,10 @@
 <script>
-	import { createUser } from '../../api/user_service.js';
-	import { on } from 'svelte/events';
+	import { createUser, loginUser } from '../../api/user_service.js';
 	import { fade, fly } from 'svelte/transition';
 	import Navbar from '$lib/components/Navbar.svelte';
 	import { goto } from '$app/navigation';
-	// svelte-ignore export_let_unused
+	import Swal from 'sweetalert2';
+
 	export let data;
 
 	let isRegister = false;
@@ -15,15 +15,11 @@
 	let password = '';
 	let showPassword = false;
 
-	function loginAdmin() {
-		if (email === 'admin@gmail.com') {
-			goto('/admin');
-		} else {
-			alert('Este correo no tiene acceso de administrador');
-		}
-	}
 	async function handleSubmit() {
 		if (isRegister) {
+			// =========================
+			// REGISTRO
+			// =========================
 			const userData = {
 				role_id: 1,
 				name: nombre,
@@ -32,14 +28,14 @@
 				password: password
 			};
 
-			console.log('Enviando:', userData);
-
 			try {
 				const result = await createUser(userData);
 
-				console.log('Usuario creado:', result);
-
-				alert('Usuario registrado correctamente');
+				Swal.fire({
+					title: 'Éxito',
+					text: 'Usuario registrado correctamente',
+					icon: 'success'
+				});
 
 				// limpiar campos
 				nombre = '';
@@ -47,15 +43,47 @@
 				email = '';
 				password = '';
 
-				// volver al login
 				isRegister = false;
-			} catch (error) {
-				console.error(error);
 
-				alert('Error registrando usuario');
+			} catch (error) {
+				Swal.fire({
+					title: 'Error',
+					text: error.message || 'Error registrando usuario',
+					icon: 'error'
+				});
 			}
+
 		} else {
-			console.log('Intentando login:', { email, password });
+		
+			try {
+				const user = await loginUser(email, password);
+				
+
+				console.log('Usuario logueado:', user);
+
+				// guardar sesión
+				localStorage.setItem('user', JSON.stringify(user));
+           
+				Swal.fire({
+					title: 'Bienvenido',
+					text: `Hola ${user.name}`,
+					icon: 'success'
+				});
+
+				// redirección por rol
+				if (user.role_id === 1) {
+					goto('/admin');
+				} else if (user.role_id === 2) {
+					goto('/'); // usuario normal
+				}
+
+			} catch (error) {
+				Swal.fire({
+					title: 'Error',
+					text: error.message || 'Credenciales incorrectas',
+					icon: 'error'
+				});
+			}
 		}
 	}
 </script>
@@ -109,9 +137,7 @@
 			<button class="btn-login">
 				{isRegister ? 'Registrarse' : 'Iniciar Sesión'}
 			</button>
-			<button id="admin-login" type="button" class="btn-login" on:click={loginAdmin}>
-				Iniciar Sesión como administrador
-			</button>
+			
 		</form>
 
 		<p class="footer-text">

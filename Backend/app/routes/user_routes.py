@@ -10,8 +10,12 @@ from app.controllers.user_controller import (
     get_user,
     update_user,
     delete_user,
-    restore_user
+    restore_user,
+    get_user_by_email,
+    login_user,
+
 )
+from app.schemas.user_schema import LoginRequest
 
 router = APIRouter(prefix="/users", tags=["Users"])
 
@@ -33,6 +37,15 @@ def read_all(db: Session = Depends(get_db)):
 def read_one(user_id: int, db: Session = Depends(get_db)):
     return get_user(db, user_id)
 
+# Get by email
+@router.get("/email/{email}", response_model=UserResponse)
+def read_by_email(email: str, db: Session = Depends(get_db)):
+    return get_user_by_email(db, email)
+
+#login
+@router.post("/login", response_model=UserResponse)
+def login(data: LoginRequest, db: Session = Depends(get_db)):
+    return login_user(db, data.email, data.password)
 
 # UPDATE
 @router.put("/{user_id}", response_model=UserResponse)
