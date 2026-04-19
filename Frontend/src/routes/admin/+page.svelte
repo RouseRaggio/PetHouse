@@ -1,11 +1,15 @@
 <script>
-	import { onMount } from 'svelte';
+	import { onMount, tick } from 'svelte';
+	import { Grid, h } from 'gridjs';
+	import 'gridjs/dist/theme/mermaid.css';
+	import Swal from 'sweetalert2';
+
 	import { getUsers, createUser, updateUser, deleteUser } from '../../api/user_service.js';
-	import PowerBI from '$lib/components/PowerBIReport.svelte';
 	import AdminNavbar from '$lib/components/AdminNavbar.svelte';
 
 	let users = [];
 	let editUserId = null;
+	let grid;
 
 	let newUser = {
 		name: '',
@@ -16,16 +20,83 @@
 		status: 'Activo'
 	};
 
-	// Cargar usuarios
+	// =========================
+	// LOAD USERS
+	// =========================
 	onMount(async () => {
+		await loadUsers();
+	});
+
+	async function loadUsers() {
 		try {
-			users = await getUsers();
+			const response = await getUsers();
+			users = response.data ?? response;
+
+			await tick();
+			renderGrid();
 		} catch (error) {
 			console.error('Error cargando usuarios:', error);
 		}
+	}
+
+	// =========================
+	// GRID (FORMA CORRECTA)
+	// =========================
+function renderGrid() {
+	if (grid) grid.destroy();
+
+	grid = new Grid({
+		columns: [
+			'Nombre',
+			'Apellido',
+			'Correo',
+			'Rol',
+			{
+				name: 'Acciones',
+				formatter: (_, row) => {
+					const user = row.cells[4]?.data;
+
+					if (!user) return '';
+
+					return h('div', {}, [
+						h(
+							'button',
+							{
+								className: 'btn btn-sm btn-warning me-1',
+								onClick: () => startEdit(user)
+							},
+							'Editar'
+						),
+						h(
+							'button',
+							{
+								className: 'btn btn-sm btn-danger',
+								onClick: () => removeUser(user.id)
+							},
+							'Eliminar'
+						)
+					]);
+				}
+			}
+		],
+		data: users.map((u) => [
+			u.name,
+			u.last_name,
+			u.email,
+			u.role ?? 'Usuario',
+			u
+		]),
+		search: true,
+		sort: true,
+		pagination: { limit: 5 }
 	});
 
-	// Crear usuario
+	grid.render(document.getElementById('table-wrapper'));
+}
+
+	// =========================
+	// CRUD
+	// =========================
 	async function addUser() {
 		const userData = {
 			name: newUser.name,
@@ -35,13 +106,9 @@
 			role_id: newUser.role === 'Admin' ? 1 : 2
 		};
 
-		console.log('Enviando:', userData);
-
 		try {
-			const created = await createUser(userData);
-
-			users = [...users, created];
-
+			await createUser(userData);
+			await loadUsers();
 			resetForm();
 		} catch (error) {
 			console.error('Error creando usuario:', error);
@@ -49,20 +116,39 @@
 		}
 	}
 
-	// Eliminar usuario
 	async function removeUser(id) {
-		if (!confirm('¿Eliminar usuario?')) return;
+		const result = await Swal.fire({
+			title: '¿Eliminar usuario?',
+			text: 'Esta acción no se puede deshacer',
+			icon: 'warning',
+			showCancelButton: true,
+			confirmButtonText: 'Sí, eliminar',
+			cancelButtonText: 'Cancelar'
+		});
+
+		if (!result.isConfirmed) return;
 
 		try {
 			await deleteUser(id);
 
-			users = users.filter((u) => u.id !== id);
+			await Swal.fire({
+				title: 'Eliminado',
+				text: 'El usuario fue eliminado correctamente',
+				icon: 'success'
+			});
+
+			await loadUsers();
 		} catch (error) {
 			console.error('Error eliminando usuario:', error);
+
+			Swal.fire({
+				title: 'Error',
+				text: 'No se pudo eliminar el usuario',
+				icon: 'error'
+			});
 		}
 	}
 
-	// Iniciar edición
 	function startEdit(user) {
 		editUserId = user.id;
 
@@ -70,19 +156,17 @@
 			name: user.name,
 			last_name: user.last_name,
 			email: user.email,
-			password: user.password,
+			password: '',
 			role: user.role ?? 'Usuario',
 			status: user.status ?? 'Activo'
 		};
 	}
 
-	// Guardar edición
 	async function saveEdit() {
 		const userData = {
 			name: newUser.name,
 			last_name: newUser.last_name,
 			email: newUser.email,
-			password: newUser.password,
 			role_id: newUser.role === 'Admin' ? 1 : 2
 		};
 
@@ -91,10 +175,8 @@
 		}
 
 		try {
-			const updated = await updateUser(editUserId, userData);
-
-			users = await getUsers();
-
+			await updateUser(editUserId, userData);
+			await loadUsers();
 			resetForm();
 			editUserId = null;
 		} catch (error) {
@@ -104,7 +186,6 @@
 
 	function cancelEdit() {
 		editUserId = null;
-
 		resetForm();
 	}
 
@@ -125,7 +206,7 @@
 <section class="container my-4">
 	<h2 class="mb-4">Gestión de Usuarios</h2>
 
-	<!-- Formulario -->
+	<!-- FORMULARIO -->
 	<div class="card mb-4 p-3">
 		<h5>{editUserId ? 'Editar Usuario' : 'Agregar Usuario'}</h5>
 
@@ -161,9 +242,8 @@
 
 		<div class="mt-3">
 			{#if editUserId}
-				<button class="btn btn-success me-2" on:click={saveEdit}> Guardar </button>
-
-				<button class="btn btn-secondary" on:click={cancelEdit}> Cancelar </button>
+				<button class="btn btn-success me-2" on:click={saveEdit}>Guardar</button>
+				<button class="btn btn-secondary" on:click={cancelEdit}>Cancelar</button>
 			{:else}
 				<button
 					class="btn btn-primary"
@@ -176,37 +256,6 @@
 		</div>
 	</div>
 
-	<!-- Tabla -->
-	<table class="table table-striped table-hover">
-		<thead class="table-dark">
-			<tr>
-				<th>Nombre</th>
-				<th>Apellido</th>
-				<th>Correo</th>
-				<th>Rol</th>
-				<th>Acciones</th>
-			</tr>
-		</thead>
-
-		<tbody>
-			{#each users as u (u.id)}
-				<tr>
-					<td>{u.name}</td>
-					<td>{u.last_name}</td>
-					<td>{u.email}</td>
-					<td>{u.role ?? 'Usuario'}</td>
-
-					<td>
-						<button class="btn btn-sm btn-warning me-1" on:click={() => startEdit(u)}>
-							Editar
-						</button>
-
-						<button class="btn btn-sm btn-danger" on:click={() => removeUser(u.id)}>
-							Eliminar
-						</button>
-					</td>
-				</tr>
-			{/each}
-		</tbody>
-	</table>
+	<!-- DATATABLE -->
+	<div id="table-wrapper"></div>
 </section>
