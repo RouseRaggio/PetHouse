@@ -42,57 +42,51 @@
 	// =========================
 	// GRID (FORMA CORRECTA)
 	// =========================
-function renderGrid() {
-	if (grid) grid.destroy();
+	function renderGrid() {
+		if (grid) grid.destroy();
 
-	grid = new Grid({
-		columns: [
-			'Nombre',
-			'Apellido',
-			'Correo',
-			'Rol',
-			{
-				name: 'Acciones',
-				formatter: (_, row) => {
-					const user = row.cells[4]?.data;
+		grid = new Grid({
+			columns: [
+				'Nombre',
+				'Apellido',
+				'Correo',
+				'Rol',
+				{
+					name: 'Acciones',
+					formatter: (_, row) => {
+						const user = row.cells[4]?.data;
 
-					if (!user) return '';
+						if (!user) return '';
 
-					return h('div', {}, [
-						h(
-							'button',
-							{
-								className: 'btn btn-sm btn-warning me-1',
-								onClick: () => startEdit(user)
-							},
-							'Editar'
-						),
-						h(
-							'button',
-							{
-								className: 'btn btn-sm btn-danger',
-								onClick: () => removeUser(user.id)
-							},
-							'Eliminar'
-						)
-					]);
+						return h('div', {}, [
+							h(
+								'button',
+								{
+									className: 'btn btn-sm btn-warning me-1',
+									onClick: () => startEdit(user)
+								},
+								'Editar'
+							),
+							h(
+								'button',
+								{
+									className: 'btn btn-sm btn-danger',
+									onClick: () => removeUser(user.id)
+								},
+								'Eliminar'
+							)
+						]);
+					}
 				}
-			}
-		],
-		data: users.map((u) => [
-			u.name,
-			u.last_name,
-			u.email,
-			u.role ?? 'Usuario',
-			u
-		]),
-		search: true,
-		sort: true,
-		pagination: { limit: 5 }
-	});
+			],
+			data: users.map((u) => [u.name, u.last_name, u.email, u.role ?? 'Usuario', u]),
+			search: true,
+			sort: true,
+			pagination: { limit: 5 }
+		});
 
-	grid.render(document.getElementById('table-wrapper'));
-}
+		grid.render(document.getElementById('table-wrapper'));
+	}
 
 	// =========================
 	// CRUD

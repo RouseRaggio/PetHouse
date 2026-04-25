@@ -15,7 +15,7 @@ class Adoption(Base):
     fecha_solicitud = Column(DateTime, default=datetime.utcnow)
     fecha_respuesta = Column(DateTime)
 
-    cedula_url = Column(Integer)
+    cedula_url = Column(String)
     recibo_url = Column(String)
 
     quiere_tracker = Column(Boolean, default=False)

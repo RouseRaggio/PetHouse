@@ -1,6 +1,6 @@
 <script>
-
 </script>
+
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
 	<div class="container-fluid">
 		<a class="navbar-brand" href="/admin">Admin PetHouse</a>
@@ -13,9 +13,12 @@
 				<li class="nav-item">
 					<a class="nav-link active" href="/admin/dashboard">Dashboard</a>
 				</li>
-                <li class="nav-item">
-                    <a class="nav-link" href="/admin/rastreadores">Rastreadores</a>
-                </li>
+				<li class="nav-item">
+					<a class="nav-link" href="/admin/rastreadores">Rastreadores</a>
+				</li>
+				<li class="nav-item">
+					<a class="nav-link" href="/admin/adopcion">Adopción</a>
+				</li>
 				<li class="nav-item">
 					<a class="nav-link" href="/">Inicio</a>
 				</li>

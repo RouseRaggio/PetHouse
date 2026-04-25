@@ -1,4 +1,4 @@
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from fastapi import HTTPException
 from datetime import datetime
 
@@ -7,12 +7,20 @@ from app.models.pet_model import Pet
 from app.models.adoption_status_model import AdoptionStatus
 
 
+# helper para cargar relaciones
+def _query_with_relations(db: Session):
+    return db.query(Adoption).options(
+        joinedload(Adoption.pet),
+        joinedload(Adoption.adoptante),
+        joinedload(Adoption.status)
+    )
+
+
 # =========================
 # CREATE ADOPTION
 # =========================
 
 def create_adoption(db: Session, data, user_id: int):
-
     pet = db.query(Pet).filter(
         Pet.id == data.pet_id,
         Pet.deleted_at == None
@@ -21,7 +29,6 @@ def create_adoption(db: Session, data, user_id: int):
     if not pet:
         raise HTTPException(404, "Mascota no encontrada")
 
-    # Validar que no esté adoptado
     approved_status = db.query(AdoptionStatus).filter(
         AdoptionStatus.name == "APPROVED"
     ).first()
@@ -48,7 +55,7 @@ def create_adoption(db: Session, data, user_id: int):
     db.commit()
     db.refresh(adoption)
 
-    return adoption
+    return _query_with_relations(db).filter(Adoption.id == adoption.id).first()
 
 
 # =========================
@@ -56,8 +63,7 @@ def create_adoption(db: Session, data, user_id: int):
 # =========================
 
 def get_adoptions(db: Session):
-
-    return db.query(Adoption).filter(
+    return _query_with_relations(db).filter(
         Adoption.deleted_at == None
     ).all()
 
@@ -67,8 +73,7 @@ def get_adoptions(db: Session):
 # =========================
 
 def get_adoption(db: Session, adoption_id: int):
-
-    adoption = db.query(Adoption).filter(
+    adoption = _query_with_relations(db).filter(
         Adoption.id == adoption_id,
         Adoption.deleted_at == None
     ).first()
@@ -84,7 +89,6 @@ def get_adoption(db: Session, adoption_id: int):
 # =========================
 
 def change_adoption_status(db: Session, adoption_id: int, status_id: int):
-
     adoption = db.query(Adoption).filter(
         Adoption.id == adoption_id,
         Adoption.deleted_at == None
@@ -100,7 +104,6 @@ def change_adoption_status(db: Session, adoption_id: int, status_id: int):
     if not status:
         raise HTTPException(404, "Estado inválido")
 
-    # Validar estado final
     current_status = db.query(AdoptionStatus).filter(
         AdoptionStatus.id == adoption.status_id
     ).first()
@@ -112,9 +115,8 @@ def change_adoption_status(db: Session, adoption_id: int, status_id: int):
     adoption.fecha_respuesta = datetime.utcnow()
 
     db.commit()
-    db.refresh(adoption)
 
-    return adoption
+    return _query_with_relations(db).filter(Adoption.id == adoption_id).first()
 
 
 # =========================
@@ -122,7 +124,6 @@ def change_adoption_status(db: Session, adoption_id: int, status_id: int):
 # =========================
 
 def delete_adoption(db: Session, adoption_id: int):
-
     adoption = db.query(Adoption).filter(
         Adoption.id == adoption_id,
         Adoption.deleted_at == None
