@@ -2,9 +2,22 @@
 	import Navbar from '$lib/components/Navbar.svelte';
 	import PetCard from '$lib/components/PetCard.svelte';
 	import PetModal from '$lib/components/PetModal.svelte';
-	export let data;
+	import { onMount } from 'svelte';
+
 	let selectedPet = null;
 	let search = '';
+	let pets = [];
+
+	onMount(async () => {
+		try {
+			const res = await fetch('http://localhost:8001/pets');
+			if (res.ok) {
+				pets = await res.json();
+			}
+		} catch (error) {
+			console.error('Error fetching pets:', error);
+		}
+	});
 
 	function openModal(pet) {
 		selectedPet = pet;
@@ -14,7 +27,7 @@
 		selectedPet = null;
 	}
 
-	$: filteredPets = data.pets?.filter(
+	$: filteredPets = pets?.filter(
 		(pet) =>
 			pet.name.toLowerCase().includes(search.toLowerCase()) ||
 			pet.species.toLowerCase().includes(search.toLowerCase()) ||

@@ -10,6 +10,13 @@ from app.schemas.adoption_schema import (
     AdoptionResponse
 )
 from app.auth.dependencies import get_current_active_user
+from app.controllers.adoption_controller import (
+    create_adoption,
+    get_adoptions,
+    get_adoption,
+    change_adoption_status,
+    delete_adoption
+)
 
 router = APIRouter(prefix="/adoptions", tags=["Adoptions"])
 

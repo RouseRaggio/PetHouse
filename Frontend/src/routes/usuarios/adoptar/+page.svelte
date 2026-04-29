@@ -47,7 +47,7 @@
 		const token = localStorage.getItem('token');
 		const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
 
-		const res = await fetch('http://localhost:8000/adoptions', {
+		const res = await fetch('http://localhost:8001/adoptions/', {
 			method: 'POST',
 			headers: headers,
 			body: formData
