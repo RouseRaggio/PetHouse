@@ -11,15 +11,19 @@ DATABASE_USER = os.getenv("DATABASE_USER")
 DATABASE_PASSWORD = os.getenv("DATABASE_PASSWORD")
 DATABASE_NAME = os.getenv("DATABASE_NAME")
 
-DATABASE_URL = (
-    f"postgresql://{DATABASE_USER}:{DATABASE_PASSWORD}"
-    f"@{DATABASE_HOST}:{DATABASE_PORT}/{DATABASE_NAME}"
-    "?sslmode=require"
-)
+if DATABASE_HOST:
+    DATABASE_URL = (
+        f"postgresql://{DATABASE_USER}:{DATABASE_PASSWORD}"
+        f"@{DATABASE_HOST}:{DATABASE_PORT}/{DATABASE_NAME}"
+        "?sslmode=require"
+    )
+else:
+    # Usar SQLite para desarrollo local
+    DATABASE_URL = "sqlite:///./pet_house.db"
 
 print("DATABASE_URL:", DATABASE_URL) 
 
-engine = create_engine(DATABASE_URL)
+engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False} if DATABASE_URL.startswith("sqlite") else {})
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 def get_db():

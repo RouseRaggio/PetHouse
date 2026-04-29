@@ -15,9 +15,15 @@ from app.controllers.user_controller import (
     login_user,
 
 )
-from app.schemas.user_schema import LoginRequest
+from app.schemas.user_schema import LoginRequest, TokenResponse
 
 router = APIRouter(prefix="/users", tags=["Users"])
+
+
+# LOGIN - Must be before {user_id} to avoid conflict
+@router.post("/login", response_model=TokenResponse)
+def login(data: LoginRequest, db: Session = Depends(get_db)):
+    return login_user(db, data.email, data.password)
 
 
 # CREATE
@@ -32,20 +38,16 @@ def read_all(db: Session = Depends(get_db)):
     return get_users(db)
 
 
-# GET ONE
-@router.get("/{user_id}", response_model=UserResponse)
-def read_one(user_id: int, db: Session = Depends(get_db)):
-    return get_user(db, user_id)
-
-# Get by email
+# Get by email - Must be before {user_id} to avoid conflict
 @router.get("/email/{email}", response_model=UserResponse)
 def read_by_email(email: str, db: Session = Depends(get_db)):
     return get_user_by_email(db, email)
 
-#login
-@router.post("/login", response_model=UserResponse)
-def login(data: LoginRequest, db: Session = Depends(get_db)):
-    return login_user(db, data.email, data.password)
+
+# GET ONE - Must be after more specific routes
+@router.get("/{user_id}", response_model=UserResponse)
+def read_one(user_id: int, db: Session = Depends(get_db)):
+    return get_user(db, user_id)
 
 # UPDATE
 @router.put("/{user_id}", response_model=UserResponse)

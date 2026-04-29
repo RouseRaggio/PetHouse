@@ -2,10 +2,13 @@
 	import { createUser, loginUser } from '../../api/user_service.js';
 	import { fade, fly } from 'svelte/transition';
 	import Navbar from '$lib/components/Navbar.svelte';
+	import { setAuth } from '$lib/stores/auth.js';
+	import { getAndClearRedirectUrl } from '$lib/utils/auth.js';
 	import { goto } from '$app/navigation';
+	import { page } from '$app/stores';
 	import Swal from 'sweetalert2';
-
-	export let data;
+	// svelte-ignore export_let_unused
+		export let data;
 
 	let isRegister = false;
 
@@ -14,6 +17,24 @@
 	let email = '';
 	let password = '';
 	let showPassword = false;
+	let authMessage = '';
+
+	// Get message from URL if present
+	$: if ($page.url.searchParams.has('message')) {
+		authMessage = $page.url.searchParams.get('message');
+		// Show the message in a toast or alert
+		if (authMessage) {
+			Swal.fire({
+				title: 'Acceso requerido',
+				text: authMessage,
+				icon: 'info',
+				toast: true,
+				position: 'top-end',
+				showConfirmButton: false,
+				timer: 3000
+			});
+		}
+	}
 
 	async function handleSubmit() {
 		if (isRegister) {
@@ -21,7 +42,7 @@
 			// REGISTRO
 			// =========================
 			const userData = {
-				role_id: 1,
+				role_id: 2,  // Usuario normal por defecto
 				name: nombre,
 				last_name: apellido,
 				email: email,
@@ -56,25 +77,34 @@
 		} else {
 		
 			try {
-				const user = await loginUser(email, password);
+				const result = await loginUser(email, password);
 				
+				console.log('Login result:', result);
 
-				console.log('Usuario logueado:', user);
-
-				// guardar sesión
-				localStorage.setItem('user', JSON.stringify(user));
+				// guardar token y usuario
+			setAuth(result.access_token, result.user);
            
 				Swal.fire({
 					title: 'Bienvenido',
-					text: `Hola ${user.name}`,
+					text: `Hola ${result.user.name}`,
 					icon: 'success'
 				});
 
-				// redirección por rol
-				if (user.role_id === 1) {
-					goto('/admin');
-				} else if (user.role_id === 2) {
-					goto('/'); // usuario normal
+				// Verificar si hay una URL de redirección guardada
+				const redirectUrl = getAndClearRedirectUrl();
+
+				if (redirectUrl) {
+					// Redirigir a la URL guardada
+					goto(redirectUrl);
+				} else {
+					// Redirección por rol si no hay URL guardada
+					const roleId = result.user.role_id;
+					if (roleId === 1) {
+						goto('/admin');
+					} else {
+						// Usuario normal va a la página principal
+						goto('/');
+					}
 				}
 
 			} catch (error) {

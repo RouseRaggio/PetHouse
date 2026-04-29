@@ -5,7 +5,9 @@
 
 	export let selectedPet;
 
-	$: adoptado = selectedPet.status === 'adoptado';
+	$: age = selectedPet.birth_date ? Math.floor((new Date() - new Date(selectedPet.birth_date)) / (365.25 * 24 * 60 * 60 * 1000)) : 'Desconocida';
+
+	$: adoptado = selectedPet.status !== 'AVAILABLE';
 
 	const dispatch = createEventDispatcher();
 
@@ -42,7 +44,7 @@
 
 		<div class="modal-body">
 			<div class="image-container">
-				<img src={selectedPet.image_url} alt={selectedPet.name} />
+				<img src={selectedPet.image_url || 'https://via.placeholder.com/400x300?text=Sin+imagen'} alt={selectedPet.name} />
 			</div>
 
 			<div class="info-container">
@@ -52,7 +54,7 @@
 					{adoptado ? 'Adoptado' : 'Disponible'}
 				</div>
 
-				<p><strong>Edad:</strong> {selectedPet.age} meses</p>
+				<p><strong>Edad:</strong> {age} años</p>
 				<p><strong>Sexo:</strong> {selectedPet.gender}</p>
 				<p><strong>Raza:</strong> {selectedPet.race}</p>
 				<p><strong>Descripción:</strong> {selectedPet.description}</p>

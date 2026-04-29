@@ -1,5 +1,6 @@
 <script>
 	import Navbar from '$lib/components/Navbar.svelte';
+	import { createPet } from '../../../api/pet_service.js';
 
 	let name = '';
 	let species = '';
@@ -41,24 +42,24 @@
 			formData.append('image', imageFile);
 		}
 
-		const res = await fetch('http://localhost:8000/pets', {
-			method: 'POST',
-			body: formData
-		});
+		try {
+			const data = await createPet(formData);
+			message = 'Mascota publicada exitosamente';
+			success = true;
 
-		const data = await res.json();
-
-		message = data.message;
-		success = true;
-
-		name = '';
-		species = '';
-		race = '';
-		birth_date = '';
-		gender = '';
-		description = '';
-		imageFile = null;
-		preview = '';
+			// Limpiar formulario
+			name = '';
+			species = '';
+			race = '';
+			birth_date = '';
+			gender = '';
+			description = '';
+			imageFile = null;
+			preview = '';
+		} catch (error) {
+			message = error.message;
+			success = false;
+		}
 	}
 </script>
 

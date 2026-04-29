@@ -40,27 +40,32 @@
 
 		const formData = new FormData();
 		formData.append('pet_id', pet.id);
-		formData.append('status_id', 1);
 		formData.append('quiere_tracker', quiere_tracker);
 		formData.append('cedula', cedulaFile);
 		formData.append('recibo', reciboFile);
 
+		const token = localStorage.getItem('token');
+		const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+
 		const res = await fetch('http://localhost:8000/adoptions', {
 			method: 'POST',
+			headers: headers,
 			body: formData
 		});
 
 		const dataRes = await res.json();
-		message = dataRes.message;
-		success = res.ok;
-
-		if (success) {
+		if (res.ok) {
+			message = 'Solicitud enviada correctamente';
+			success = true;
 			cedulaFile = null;
 			reciboFile = null;
 			cedulaPreview = '';
 			reciboPreview = '';
 			quiere_tracker = false;
 			localStorage.removeItem('selectedPet');
+		} else {
+			message = dataRes.detail || dataRes.message || 'No se pudo enviar la solicitud';
+			success = false;
 		}
 	}
 </script>
@@ -85,14 +90,6 @@
 					</div>
 
 					<div class="card-body">
-						<!-- Mensaje temporal - eliminar cuando haya login -->
-						<div class="alert alert-warning d-flex align-items-center gap-2 mb-4">
-							<span>⚠️</span>
-							<span
-								>Debes <strong>iniciar sesión</strong> para poder enviar una solicitud de adopción.</span
-							>
-						</div>
-
 						{#if message}
 							<div class="alert {success ? 'alert-success' : 'alert-danger'}">
 								{message}
@@ -130,8 +127,7 @@
 									class="form-control"
 									accept="image/*,application/pdf"
 									on:change={handleCedula}
-									disabled
-								/>
+																	/>
 							</div>
 
 							<div class="col-md-6 mb-3">
@@ -142,8 +138,7 @@
 									class="form-control"
 									accept="image/*,application/pdf"
 									on:change={handleRecibo}
-									disabled
-								/>
+																	/>
 							</div>
 
 							<div class="col-12 mb-4">
@@ -153,8 +148,7 @@
 										type="checkbox"
 										id="quiere_tracker"
 										bind:checked={quiere_tracker}
-										disabled
-									/>
+																			/>
 									<label class="form-check-label text-muted" for="quiere_tracker">
 										¿Deseas incluir un tracker GPS para tu mascota?
 									</label>
@@ -162,7 +156,7 @@
 							</div>
 						</div>
 
-						<button class="btn btn-primary w-100" disabled> Enviar Solicitud </button>
+						<button class="btn btn-primary w-100" on:click={submitSolicitud}> Enviar Solicitud </button>
 					</div>
 				</div>
 			{/if}

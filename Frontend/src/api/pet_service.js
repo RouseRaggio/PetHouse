@@ -1,16 +1,17 @@
 
-import API_URL from './api';
+import API_URL, { getAuthHeaders } from './api';
 // =========================
 // CREATE PET
 // =========================
-export const createPet = async (data) => {
+export const createPet = async (formData) => {
   try {
+    const token = localStorage.getItem('token');
+    const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+
     const response = await fetch(`${API_URL}/pets`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(data),
+      headers: headers,
+      body: formData,  // FormData ya incluye el Content-Type
     });
 
     if (!response.ok) {
@@ -91,7 +92,7 @@ export const updatePet = async (id, data) => {
 // =========================
 export const deletePet = async (id) => {
   try {
-    const response = await fetch(`${API_URL}/pets/+${id}`, {
+    const response = await fetch(`${API_URL}/pets/${id}`, {
       method: "DELETE",
     });
 

@@ -1,8 +1,5 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
-
-import os
 
 from app.db.session import engine
 from app.db.base import Base
@@ -27,23 +24,20 @@ app = FastAPI()
 # Crear tablas automáticamente
 Base.metadata.create_all(bind=engine)
 
-# Crear carpeta uploads si no existe
-if not os.path.exists("uploads"):
-    os.makedirs("uploads")
-
 # ==========================
 # CORS
 # ==========================
 
-origins = [
-    "http://localhost",
-    "http://localhost:5173",
-    "http://127.0.0.1:5173",
-]
-
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=[
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+        "http://localhost:5174",
+        "http://127.0.0.1:5174",
+        "http://localhost:5175",
+        "http://127.0.0.1:5175",
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -52,8 +46,6 @@ app.add_middleware(
 # ==========================
 # STATIC FILES
 # ==========================
-
-app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
 # ==========================
 # ROUTES

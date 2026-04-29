@@ -1,11 +1,12 @@
 from sqlalchemy.orm import Session
-from app.models.user import User
-from app.models.role import Role
-from app.models.permission import Permission
+from sqlalchemy import or_
+from app.models.user_model import User
+from app.models.role_model import Role
+from app.models.permission_model import Permission
 from app.core.security import hash_password
 
 
-def seed_superadmin(db: Session):
+def seed_admin(db: Session):
 
     # Crear permisos base
     permissions_list = [
@@ -22,29 +23,41 @@ def seed_superadmin(db: Session):
 
     db.commit()
 
-    # Crear rol SUPERADMIN
-    role = db.query(Role).filter_by(name="SUPERADMIN").first()
-
-    if not role:
-        role = Role(name="SUPERADMIN")
-        db.add(role)
+    # Crear rol Admin y Usuario
+    admin_role = db.query(Role).filter_by(name="Admin").first()
+    if not admin_role:
+        admin_role = Role(name="Admin")
+        db.add(admin_role)
         db.commit()
-        db.refresh(role)
+        db.refresh(admin_role)
 
-    # Asignar todos los permisos al superadmin
+    user_role = db.query(Role).filter_by(name="Usuario").first()
+    if not user_role:
+        user_role = Role(name="Usuario")
+        db.add(user_role)
+        db.commit()
+        db.refresh(user_role)
+
+    # Asignar todos los permisos al rol Admin
     all_permissions = db.query(Permission).all()
-    role.permissions = all_permissions
+    admin_role.permissions = all_permissions
     db.commit()
 
-    # Crear usuario superadmin
-    user = db.query(User).filter_by(email="admin@admin.com").first()
+    # Crear o actualizar usuario admin
+    user = db.query(User).filter(or_(User.email == "admin@gmail.com", User.email == "admin@admin.com")).first()
 
     if not user:
-        superadmin = User(
-            nombre="Super Admin",
-            email="admin@admin.com",
-            password=hash_password("Admin123*"),
-            role_id=role.id
+        admin_user = User(
+            name="Admin",
+            last_name="",
+            email="admin@gmail.com",
+            password=hash_password("secret"),
+            role_id=admin_role.id
         )
-        db.add(superadmin)
-        db.commit()
+        db.add(admin_user)
+    else:
+        user.email = "admin@gmail.com"
+        user.role_id = admin_role.id
+        user.password = hash_password("secret")
+
+    db.commit()

@@ -6,6 +6,7 @@ from app.models.user_model import User
 from app.schemas.user_schema import UserCreate, UserUpdate
 from app.core.security import hash_password
 from app.core.security import verify_password
+from app.auth.jwt_handler import create_access_token
 
 
 # =========================
@@ -133,14 +134,21 @@ def login_user(db: Session, email: str, password: str):
     if not verify_password(password, user.password):
         raise HTTPException(400, "Contraseña incorrecta")
 
-    return{
-        "id": user.id,
-        "role_id": user.role_id,
-        "name": user.name,
-        "last_name": user.last_name,
-        "email": user.email,
-        "is_active": user.is_active,
-        "created_at": user.created_at
+    # Create JWT token
+    access_token = create_access_token(data={"sub": str(user.id)})
+
+    return {
+        "access_token": access_token,
+        "token_type": "bearer",
+        "user": {
+            "id": user.id,
+            "role_id": user.role_id,
+            "name": user.name,
+            "last_name": user.last_name,
+            "email": user.email,
+            "is_active": user.is_active,
+            "created_at": user.created_at
+        }
     }
 
 # =========================

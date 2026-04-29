@@ -1,5 +1,5 @@
 
-import API_URL from './api';
+import API_URL, { getAuthHeaders } from './api';
 // =========================
 // CREATE ADOPTION
 // =========================
@@ -7,9 +7,7 @@ export const createAdoption = async (data) => {
   try {
     const response = await fetch(`${API_URL}/adoptions`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: getAuthHeaders(),
       body: JSON.stringify(data),
     });
 

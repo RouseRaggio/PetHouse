@@ -1,10 +1,15 @@
 <script>
 	import { onMount } from 'svelte';
 	import { fly } from 'svelte/transition';
+	import { goto } from '$app/navigation';
+	import { auth, clearAuth } from '$lib/stores/auth.js';
 	export let showLogin = true;
 	export let variant = 'default';
 
 	let scrolled = false;
+	let user = null;
+
+	$: user = $auth?.user;
 
 	onMount(() => {
 		const handleScroll = () => {
@@ -14,6 +19,11 @@
 		window.addEventListener('scroll', handleScroll);
 		return () => window.removeEventListener('scroll', handleScroll);
 	});
+
+	function logout() {
+		clearAuth();
+		goto('/');
+	}
 </script>
 
 <nav
@@ -41,11 +51,27 @@
 				</li>
 
 				<li class="nav-item">
+					<a class="nav-link nav-custom" href="/usuarios/mascotas">Mascotas</a>
+				</li>
+
+				<li class="nav-item">
+					<a class="nav-link nav-custom" href="/usuarios/publicar">Publicar</a>
+				</li>
+
+				<li class="nav-item">
 					<a class="nav-link nav-custom" href="/usuarios/rastreador">Rastreador</a>
 				</li>
 
 				<li class="nav-item ms-3">
-					{#if showLogin}
+					{#if user}
+					<div class="d-flex align-items-center gap-2">
+						<span class="text-white">Hola, {user.name}</span>
+					{#if user.role_id === 1}
+							<a class="btn btn-outline-primary btn-sm" href="/admin">Panel Admin</a>
+						{/if}
+						<button class="btn btn-outline-danger btn-sm" on:click={logout}>Cerrar Sesión</button>
+						</div>
+					{:else if showLogin}
 						<a href="/login" class="nav-link nav-custom">Login</a>
 					{/if}
 				</li>

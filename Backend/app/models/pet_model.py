@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, DateTime
+from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, LargeBinary
 from sqlalchemy.orm import relationship
 from datetime import datetime
 from app.db.base import Base
@@ -16,6 +16,7 @@ class Pet(Base):
     gender = Column(String)
     description = Column(String)
     image_url = Column(String)
+    image_data = Column(LargeBinary)
     status = Column(String)
 
     created_at = Column(DateTime, default=datetime.utcnow)

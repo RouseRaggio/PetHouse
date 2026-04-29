@@ -1,6 +1,7 @@
 from sqlalchemy.orm import Session
-from fastapi import HTTPException
+from fastapi import HTTPException, UploadFile
 from datetime import datetime
+import base64
 
 from app.models.pet_model import Pet
 from app.schemas.pet_schema import PetCreate, PetUpdate
@@ -10,7 +11,18 @@ from app.schemas.pet_schema import PetCreate, PetUpdate
 # CREATE
 # =========================
 
-def create_pet(db: Session, pet: PetCreate, user_id: int):
+def _upload_file_to_data_uri(file: UploadFile):
+    contents = file.file.read()
+    mime = file.content_type or "application/octet-stream"
+    encoded = base64.b64encode(contents).decode("utf-8")
+    return f"data:{mime};base64,{encoded}", contents
+
+
+def create_pet(db: Session, pet: PetCreate, user_id: int, image: UploadFile = None):
+    image_url = None
+    image_data = None
+    if image:
+        image_url, image_data = _upload_file_to_data_uri(image)
 
     new_pet = Pet(
         publisher_id=user_id,
@@ -20,7 +32,8 @@ def create_pet(db: Session, pet: PetCreate, user_id: int):
         birth_date=pet.birth_date,
         gender=pet.gender,
         description=pet.description,
-        image_url=pet.image_url,
+        image_url=image_url,
+        image_data=image_data,
         status="AVAILABLE"
     )
 
