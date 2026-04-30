@@ -34,7 +34,7 @@ export async function load({ url, depends }) {
 		return { pet: null };
 	}
 
-	const res = await fetch(`http://localhost:8001/pets/${petId}`);
+	const res = await fetch(`http://localhost:8000/pets/${petId}`);
 	const pet = await res.json();
 
 	console.log('pet recibido:', pet);

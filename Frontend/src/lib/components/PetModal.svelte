@@ -2,12 +2,29 @@
 	import { fade, scale } from 'svelte/transition';
 	import { createEventDispatcher, onMount } from 'svelte';
 	import { goto } from '$app/navigation';
+	import { formatAge } from '$lib/utils/formatAge.js'; 	
 
 	export let selectedPet;
 
-	$: age = selectedPet.birth_date ? Math.floor((new Date() - new Date(selectedPet.birth_date)) / (365.25 * 24 * 60 * 60 * 1000)) : 'Desconocida';
+	$: ageText = formatAge(selectedPet.birth_date);
 
-	$: adoptado = selectedPet.status !== 'AVAILABLE';
+	$: notAvailable = selectedPet.status !== 'AVAILABLE';
+
+	const statusMap = {
+		'AVAILABLE': 'Disponible',
+		'ADOPTED': 'Adoptado',
+		'RESERVED': 'Reservado',
+		'UNAVAILABLE': 'No disponible'
+	};
+	$: statusText = statusMap[selectedPet.status] || selectedPet.status;
+	
+	const statusClassMap = {
+		'AVAILABLE': 'disponible',
+		'ADOPTED': 'adoptado',
+		'RESERVED': 'reservado',
+		'UNAVAILABLE': 'no-disponible'
+	};
+	$: statusClass = statusClassMap[selectedPet.status] || 'adoptado';
 
 	const dispatch = createEventDispatcher();
 
@@ -50,17 +67,17 @@
 			<div class="info-container">
 				<h3>{selectedPet.name}</h3>
 
-				<div class="status-badge {adoptado ? 'adoptado' : 'disponible'}">
-					{adoptado ? 'Adoptado' : 'Disponible'}
+				<div class="status-badge {statusClass}">
+					{statusText}
 				</div>
 
-				<p><strong>Edad:</strong> {age} años</p>
+				<p><strong>Edad:</strong> {ageText}</p>
 				<p><strong>Sexo:</strong> {selectedPet.gender}</p>
 				<p><strong>Raza:</strong> {selectedPet.race}</p>
 				<p><strong>Descripción:</strong> {selectedPet.description}</p>
 
-				<button class="btn-adopt" disabled={adoptado} on:click={handleAdopt}>
-					{adoptado ? 'Ya fue adoptado' : 'Quiero Adoptar 🐾'}
+				<button class="btn-adopt" disabled={notAvailable} on:click={handleAdopt}>
+					{notAvailable ? `Estado: ${statusText}` : 'Quiero Adoptar 🐾'}
 				</button>
 			</div>
 		</div>

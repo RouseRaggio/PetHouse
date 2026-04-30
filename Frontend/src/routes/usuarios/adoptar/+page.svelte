@@ -2,70 +2,87 @@
 	import { onMount } from 'svelte';
 	import Navbar from '$lib/components/Navbar.svelte';
 
-	let pet = null;
-	let loading = true;
+	export let data;
+
+	let pet = data?.pet || null;
+	let loading = !pet;
 	let cedulaFile = null;
 	let reciboFile = null;
 	let quiere_tracker = false;
-	let cedulaPreview = '';
-	let reciboPreview = '';
 	let message = '';
 	let success = false;
 
+	const API = 'http://localhost:8000';
+
 	onMount(() => {
-		const stored = localStorage.getItem('selectedPet');
-		if (stored) {
-			pet = JSON.parse(stored);
-			console.log('Pet completo:', pet);
+		if (!pet) {
+			const stored = localStorage.getItem('selectedPet');
+			if (stored) pet = JSON.parse(stored);
 		}
 		loading = false;
 	});
 
-	function handleCedula(e) {
-		cedulaFile = e.target.files[0];
-		if (cedulaFile) cedulaPreview = URL.createObjectURL(cedulaFile);
-	}
-
-	function handleRecibo(e) {
-		reciboFile = e.target.files[0];
-		if (reciboFile) reciboPreview = URL.createObjectURL(reciboFile);
-	}
+	function handleCedula(e) { cedulaFile = e.target.files[0]; }
+	function handleRecibo(e) { reciboFile = e.target.files[0]; }
 
 	async function submitSolicitud() {
+		message = '';
+
 		if (!cedulaFile || !reciboFile) {
 			message = 'Debes subir tu cédula y recibo de servicios';
 			success = false;
 			return;
 		}
 
-		const formData = new FormData();
-		formData.append('pet_id', pet.id);
-		formData.append('quiere_tracker', quiere_tracker);
-		formData.append('cedula', cedulaFile);
-		formData.append('recibo', reciboFile);
-
 		const token = localStorage.getItem('token');
-		const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
-
-		const res = await fetch('http://localhost:8001/adoptions/', {
-			method: 'POST',
-			headers: headers,
-			body: formData
-		});
-
-		const dataRes = await res.json();
-		if (res.ok) {
-			message = 'Solicitud enviada correctamente';
-			success = true;
-			cedulaFile = null;
-			reciboFile = null;
-			cedulaPreview = '';
-			reciboPreview = '';
-			quiere_tracker = false;
-			localStorage.removeItem('selectedPet');
-		} else {
-			message = dataRes.detail || dataRes.message || 'No se pudo enviar la solicitud';
+		const userStr = localStorage.getItem('user') || localStorage.getItem('pethouse_user');
+		if (!token || !userStr) {
+			message = 'Debes iniciar sesión para adoptar';
 			success = false;
+			return;
+		}
+
+		try {
+			loading = true;
+
+			const fd = new FormData();
+			fd.append('pet_id', pet.id);
+			fd.append('quiere_tracker', quiere_tracker);
+			fd.append('cedula', cedulaFile);
+			fd.append('recibo', reciboFile);
+
+			const res = await fetch(`${API}/adoptions/`, {
+				method: 'POST',
+				headers: {
+					'Authorization': `Bearer ${token}`
+				},
+				body: fd
+			});
+
+			const dataRes = await res.json();
+
+			if (res.ok) {
+				message = 'Solicitud enviada correctamente';
+				success = true;
+				cedulaFile = null;
+				reciboFile = null;
+				quiere_tracker = false;
+				localStorage.removeItem('selectedPet');
+				// Opcional: redirigir a la pagina principal después de un tiempo
+				setTimeout(() => {
+					window.location.href = '/usuarios/mascotas';
+				}, 2000);
+				
+			} else {
+				message = dataRes.detail || dataRes.message || 'No se pudo enviar la solicitud';
+				success = false;
+			}
+		} catch (e) {
+			message = 'Error de conexión con el servidor';
+			success = false;
+			console.error(e);
+		} finally {
+			loading = false;
 		}
 	}
 </script>
@@ -81,7 +98,7 @@
 			{:else if !pet}
 				<div class="alert alert-warning text-center">
 					No se seleccionó ninguna mascota.
-					<a href="/usuarios/mascotas" class="alert-link">Volver al catálogo</a>
+					<a href="/" class="alert-link">Volver al catálogo</a>
 				</div>
 			{:else}
 				<div class="card shadow">
@@ -91,64 +108,39 @@
 
 					<div class="card-body">
 						{#if message}
-							<div class="alert {success ? 'alert-success' : 'alert-danger'}">
-								{message}
-							</div>
+							<div class="alert {success ? 'alert-success' : 'alert-danger'}">{message}</div>
 						{/if}
 
-						<!-- Resumen de la mascota -->
+						<!-- Info mascota -->
 						<div class="d-flex align-items-center gap-3 p-3 mb-4 border rounded bg-light">
-							<img
-								src={pet.image_url}
-								alt={pet.name}
-								class="rounded"
-								style="width:80px; height:80px; object-fit:cover;"
-							/>
+							{#if pet.image_url}
+								<img src={pet.image_url} alt={pet.name} class="rounded"
+									style="width:80px; height:80px; object-fit:cover;" />
+							{/if}
 							<div>
 								<h5 class="mb-0 fw-bold">{pet.name}</h5>
 								<p class="text-muted mb-0">
-									{pet.age ?? pet.meses ?? pet.months ?? '?'} meses · {pet.species ??
-										pet.especie ??
-										''}
-									· {pet.gender ?? pet.genero ?? ''}
+									{pet.age ?? '?'} meses · {pet.species ?? ''} · {pet.gender ?? ''}
 								</p>
-								{#if pet.race ?? pet.raza}
-									<small class="text-muted">{pet.race ?? pet.raza}</small>
-								{/if}
+								{#if pet.race}<small class="text-muted">{pet.race}</small>{/if}
 							</div>
 						</div>
 
 						<div class="row">
 							<div class="col-md-6 mb-3">
-								<!-- svelte-ignore a11y_label_has_associated_control -->
-								<label class="form-label fw-semibold">Cédula de identidad *</label>
-								<input
-									type="file"
-									class="form-control"
-									accept="image/*,application/pdf"
-									on:change={handleCedula}
-																	/>
+								<label class="form-label fw-semibold" for="cedula">Cédula de identidad *</label>
+								<input id="cedula" type="file" class="form-control"
+									accept="image/*,application/pdf" on:change={handleCedula} />
 							</div>
-
 							<div class="col-md-6 mb-3">
-								<!-- svelte-ignore a11y_label_has_associated_control -->
-								<label class="form-label fw-semibold">Recibo de servicios *</label>
-								<input
-									type="file"
-									class="form-control"
-									accept="image/*,application/pdf"
-									on:change={handleRecibo}
-																	/>
+								<label class="form-label fw-semibold" for="recibo">Recibo de servicios *</label>
+								<input id="recibo" type="file" class="form-control"
+									accept="image/*,application/pdf" on:change={handleRecibo} />
 							</div>
-
 							<div class="col-12 mb-4">
 								<div class="form-check form-switch">
-									<input
-										class="form-check-input"
-										type="checkbox"
-										id="quiere_tracker"
-										bind:checked={quiere_tracker}
-																			/>
+									<input class="form-check-input" type="checkbox" id="quiere_tracker"
+										bind:checked={quiere_tracker} />
 									<label class="form-check-label text-muted" for="quiere_tracker">
 										¿Deseas incluir un tracker GPS para tu mascota?
 									</label>
@@ -156,7 +148,10 @@
 							</div>
 						</div>
 
-						<button class="btn btn-primary w-100" on:click={submitSolicitud}> Enviar Solicitud </button>
+						<button class="btn btn-primary w-100" on:click={submitSolicitud}
+							disabled={loading || success}>
+							{loading ? 'Enviando...' : 'Enviar Solicitud'}
+						</button>
 					</div>
 				</div>
 			{/if}

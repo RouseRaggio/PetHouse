@@ -1,14 +1,29 @@
 <script>
 	import { createEventDispatcher } from 'svelte';
 	import '../../app.css';
+	import { formatAge } from '$lib/utils/formatAge.js';
 	export let pet;
 	const dispatch = createEventDispatcher();
 
-	// Calcular edad aproximada en años
-	$: age = pet.birth_date ? Math.floor((new Date() - new Date(pet.birth_date)) / (365.25 * 24 * 60 * 60 * 1000)) : 'Desconocida';
+	// Calcular edad aproximada
+	$: ageText = formatAge(pet.birth_date);
 
 	// Traducir status
-	$: statusText = pet.status === 'AVAILABLE' ? 'Disponible' : pet.status;
+	const statusMap = {
+		'AVAILABLE': 'Disponible',
+		'ADOPTED': 'Adoptado',
+		'RESERVED': 'Reservado',
+		'UNAVAILABLE': 'No disponible'
+	};
+	$: statusText = statusMap[pet.status] || pet.status;
+	// Clases de color para el status
+	const statusColorMap = {
+		'AVAILABLE': 'text-success',
+		'ADOPTED': 'text-secondary',
+		'RESERVED': 'text-warning',
+		'UNAVAILABLE': 'text-danger'
+	};
+	$: statusColorClass = statusColorMap[pet.status] || 'text-muted';
 </script>
 
 <div class="card shadow-sm h-100 small-card">
@@ -16,8 +31,8 @@
 
 	<div class="card-body text-center">
 		<h5 class="fw-bold">{pet.name}</h5>
-		<p class="text-muted">{pet.species} - {age} años</p>
-		<p class="text-success small">{statusText}</p>
+		<p class="text-muted">{pet.species} - {ageText}</p>
+		<p class="{statusColorClass} small fw-bold">{statusText}</p>
 
 		<button class="btn btn-outline-primary btn-sm" on:click={() => dispatch('view')}>
 			Ver detalles

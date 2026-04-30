@@ -10,7 +10,7 @@
 
 	onMount(async () => {
 		try {
-			const res = await fetch('http://localhost:8001/pets');
+			const res = await fetch('http://localhost:8000/pets');
 			if (res.ok) {
 				pets = await res.json();
 			}

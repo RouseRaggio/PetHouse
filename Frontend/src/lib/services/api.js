@@ -1,4 +1,4 @@
-const BASE_URL = 'http://localhost:8001/pets'; // ojo ahi cambia esto a la URL del backend
+const BASE_URL = 'http://localhost:8000/pets'; // ojo ahi cambia esto a la URL del backend
 
 export async function getPets() {
 	const res = await fetch(`${BASE_URL}/pets`);

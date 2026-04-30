@@ -147,6 +147,7 @@ def login_user(db: Session, email: str, password: str):
             "last_name": user.last_name,
             "email": user.email,
             "is_active": user.is_active,
+            "gps_status": user.gps_status,
             "created_at": user.created_at
         }
     }

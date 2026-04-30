@@ -114,6 +114,9 @@ def change_adoption_status(db: Session, adoption_id: int, status_id: int):
     adoption.status_id = status_id
     adoption.fecha_respuesta = datetime.utcnow()
 
+    if status.name == "APPROVED":
+        adoption.pet.status = "ADOPTED"
+
     db.commit()
 
     return _query_with_relations(db).filter(Adoption.id == adoption_id).first()

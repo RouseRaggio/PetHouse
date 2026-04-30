@@ -21,6 +21,9 @@
 					<a class="nav-link active" href="/admin/dashboard">Dashboard</a>
 				</li>
 				<li class="nav-item">
+					<a class="nav-link" href="/admin/mascotas">Mascotas</a>
+				</li>
+				<li class="nav-item">
 					<a class="nav-link" href="/admin/rastreadores">Rastreadores</a>
 				</li>
 				<li class="nav-item">

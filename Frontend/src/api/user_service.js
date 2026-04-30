@@ -82,7 +82,7 @@ export async function createUser(userData) {
    UPDATE USER
 ========================= */
 export async function updateUser(id, user) {
-	const res = await fetch(`http://localhost:8001/users/${id}`, {
+	const res = await fetch(`http://localhost:8000/users/${id}`, {
 		method: 'PUT',
 		headers: {
 			'Content-Type': 'application/json'

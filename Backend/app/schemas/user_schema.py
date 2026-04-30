@@ -24,8 +24,9 @@ class UserUpdate(BaseModel):
     name: Optional[str]
     last_name: Optional[str]
     email: Optional[EmailStr]
-    password: Optional[str]
-    is_active: Optional[bool]
+    password: Optional[str] = None
+    is_active: Optional[bool] = None
+    gps_status: Optional[str] = None
 
 
 # =========================
@@ -39,6 +40,7 @@ class UserResponse(BaseModel):
     last_name: str
     email: EmailStr
     is_active: bool
+    gps_status: str
     created_at: Optional[datetime]
 
     class Config:

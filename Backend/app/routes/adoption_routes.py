@@ -26,6 +26,7 @@ def _upload_file_to_data_uri(file: UploadFile):
     mime = file.content_type or "application/octet-stream"
     encoded = base64.b64encode(contents).decode("utf-8")
     return f"data:{mime};base64,{encoded}"
+    
 
 
 @router.post("/", response_model=AdoptionResponse)
@@ -67,3 +68,4 @@ def change_status(adoption_id: int, data: AdoptionStatusUpdate, db: Session = De
 @router.delete("/{adoption_id}")
 def delete(adoption_id: int, db: Session = Depends(get_db)):
     return delete_adoption(db, adoption_id)
+

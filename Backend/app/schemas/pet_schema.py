@@ -22,14 +22,14 @@ class PetCreate(BaseModel):
 # =========================
 
 class PetUpdate(BaseModel):
-    name: Optional[str]
-    species: Optional[str]
-    race: Optional[str]
-    birth_date: Optional[datetime]
-    gender: Optional[str]
-    description: Optional[str]
-    image_url: Optional[str]
-    status: Optional[str]
+    name: Optional[str] = None
+    species: Optional[str] = None
+    race: Optional[str] = None
+    birth_date: Optional[datetime] = None
+    gender: Optional[str] = None
+    description: Optional[str] = None
+    image_url: Optional[str] = None
+    status: Optional[str] = None
 
 
 # =========================
