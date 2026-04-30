@@ -9,6 +9,7 @@
 	let cedulaFile = null;
 	let reciboFile = null;
 	let quiere_tracker = false;
+	let acceptedTerms = false;
 	let message = '';
 	let success = false;
 
@@ -30,6 +31,12 @@
 
 		if (!cedulaFile || !reciboFile) {
 			message = 'Debes subir tu cédula y recibo de servicios';
+			success = false;
+			return;
+		}
+
+		if (!acceptedTerms) {
+			message = 'Debes aceptar los términos y el compromiso de adopción responsable';
 			success = false;
 			return;
 		}
@@ -138,19 +145,41 @@
 									accept="image/*,application/pdf" on:change={handleRecibo} />
 							</div>
 							<div class="col-12 mb-4">
-								<div class="form-check form-switch">
-									<input class="form-check-input" type="checkbox" id="quiere_tracker"
+								<div class="p-3 bg-light border rounded mb-4">
+									<h6 class="fw-bold text-dark mb-3"><i class="bi bi-shield-check"></i> Requisitos Legales y Compromisos (Colombia)</h6>
+									<div class="small text-muted">
+										<p class="mb-2">De acuerdo con la <strong>Ley 1774 de 2016</strong> y la <strong>Ley 2054 de 2020</strong>, la adopción implica una responsabilidad legal sobre el bienestar animal. Al enviar esta solicitud, te comprometes a:</p>
+										<ul class="mb-3">
+											<li>Ser mayor de edad (+18 años) con identificación válida.</li>
+											<li>Garantizar un espacio seguro y digno para el animal.</li>
+											<li>Cubrir gastos de alimentación, salud (vacunas, desparasitación) y bienestar.</li>
+											<li><strong>Esterilización obligatoria</strong> (si no lo está ya).</li>
+											<li>No abandonar, maltratar ni ceder el animal a terceros sin aviso.</li>
+											<li>Permitir visitas de seguimiento por parte de PetHouse.</li>
+										</ul>
+									</div>
+									<div class="form-check">
+										<input class="form-check-input" type="checkbox" id="terms" bind:checked={acceptedTerms} required />
+										<label class="form-check-label fw-bold text-primary" for="terms">
+											Acepto los términos del Contrato de Adopción Responsable
+										</label>
+									</div>
+								</div>
+
+								<div class="form-check form-switch p-3 border rounded">
+									<input class="form-check-input ms-0 me-2" type="checkbox" id="quiere_tracker"
 										bind:checked={quiere_tracker} />
-									<label class="form-check-label text-muted" for="quiere_tracker">
+									<label class="form-check-label fw-bold" for="quiere_tracker">
 										¿Deseas incluir un tracker GPS para tu mascota?
 									</label>
+									<p class="x-small text-muted mb-0 ms-4">Recomendado para mayor seguridad en zonas abiertas.</p>
 								</div>
 							</div>
 						</div>
 
-						<button class="btn btn-primary w-100" on:click={submitSolicitud}
-							disabled={loading || success}>
-							{loading ? 'Enviando...' : 'Enviar Solicitud'}
+						<button class="btn btn-primary w-100 py-3 fw-bold shadow-sm" on:click={submitSolicitud}
+							disabled={loading || success || !acceptedTerms}>
+							{loading ? 'Procesando Solicitud...' : 'Confirmar y Enviar Solicitud Legal'}
 						</button>
 					</div>
 				</div>

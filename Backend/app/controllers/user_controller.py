@@ -7,6 +7,7 @@ from app.schemas.user_schema import UserCreate, UserUpdate
 from app.core.security import hash_password
 from app.core.security import verify_password
 from app.auth.jwt_handler import create_access_token
+from app.core.email import send_gps_email
 
 
 # =========================
@@ -118,6 +119,14 @@ def update_user(db: Session, user_id: int, data: UserUpdate):
     db.commit()
     db.refresh(user)
 
+    # Envío de correo real si el GPS es aprobado O si se actualiza el IMEI de un usuario ya aprobado
+    is_becoming_approved = ("gps_status" in update_data and update_data["gps_status"] == "approved")
+    is_updating_imei = ("gps_imei" in update_data and user.gps_status == "approved")
+
+    if is_becoming_approved or is_updating_imei:
+        print(f"--- Iniciando proceso de envío de correo a {user.email} ---")
+        send_gps_email(user.email, user.name, user.gps_imei)
+
     return user
 
 # login
@@ -148,6 +157,7 @@ def login_user(db: Session, email: str, password: str):
             "email": user.email,
             "is_active": user.is_active,
             "gps_status": user.gps_status,
+            "gps_imei": user.gps_imei,
             "created_at": user.created_at
         }
     }

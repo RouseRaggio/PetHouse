@@ -9,6 +9,7 @@
 
 	let requests = [];
 	let grid;
+	let sortOrder = 'recent';
 
 	let activeFilter = 'Todos';
 	const filters = ['Todos', 'Pendiente', 'Aprobado', 'Rechazado'];
@@ -135,15 +136,22 @@
 					}
 				}
 			],
-			data: filtered.map((r) => [
-				getPetName(r),
-				getAdoptanteName(r),
-				getAdoptanteEmail(r),
-				r.quiere_tracker ?? false,
-				r.fecha_solicitud ? new Date(r.fecha_solicitud).toLocaleDateString('es-CO') : '—',
-				getStatusName(r),
-				r
-			]),
+			data: filtered
+				.sort((a, b) => {
+					if (sortOrder === 'recent') {
+						return new Date(b.fecha_solicitud) - new Date(a.fecha_solicitud);
+					}
+					return (a.pet?.name || '').localeCompare(b.pet?.name || '');
+				})
+				.map((r) => [
+					getPetName(r),
+					getAdoptanteName(r),
+					getAdoptanteEmail(r),
+					r.quiere_tracker ?? false,
+					r.fecha_solicitud ? new Date(r.fecha_solicitud).toLocaleDateString('es-CO') : '—',
+					getStatusName(r),
+					r
+				]),
 			search: true,
 			sort: true,
 			pagination: { limit: 5 }
@@ -153,18 +161,43 @@
 	}
 
 	async function showDocs(request) {
-		const cedula = request.cedula_url
-			? `<p><a href="${request.cedula_url}" target="_blank" class="btn btn-sm btn-outline-primary">Ver Cédula</a></p>`
+		const openFile = (dataUrl) => {
+			if (!dataUrl) return;
+			try {
+				const parts = dataUrl.split(',');
+				const mime = parts[0].match(/:(.*?);/)[1];
+				const b64 = parts[1];
+				const bin = atob(b64);
+				const len = bin.length;
+				const arr = new Uint8Array(len);
+				for (let i = 0; i < len; i++) {
+					arr[i] = bin.charCodeAt(i);
+				}
+				const blob = new Blob([arr], { type: mime });
+				const blobUrl = URL.createObjectURL(blob);
+				window.open(blobUrl, '_blank');
+			} catch (e) {
+				console.error('Error opening file:', e);
+				window.open(dataUrl, '_blank');
+			}
+		};
+
+		// Hacer que la función esté disponible globalmente para el HTML del Swal
+		window.openAdoptionDoc = openFile;
+
+		const cedulaBtn = request.cedula_url
+			? `<button onclick="window.openAdoptionDoc('${request.cedula_url}')" class="btn btn-primary w-100 mb-2">Ver Cédula</button>`
 			: '<p class="text-muted">Sin cédula adjunta</p>';
 
-		const recibo = request.recibo_url
-			? `<p><a href="${request.recibo_url}" target="_blank" class="btn btn-sm btn-outline-primary">Ver Recibo</a></p>`
+		const reciboBtn = request.recibo_url
+			? `<button onclick="window.openAdoptionDoc('${request.recibo_url}')" class="btn btn-outline-primary w-100">Ver Recibo</button>`
 			: '<p class="text-muted">Sin recibo adjunto</p>';
 
 		await Swal.fire({
 			title: 'Documentos adjuntos',
-			html: cedula + recibo,
+			html: `<div class="p-3">${cedulaBtn}${reciboBtn}</div>`,
 			icon: 'info',
+			showConfirmButton: true,
 			confirmButtonText: 'Cerrar'
 		});
 	}
@@ -226,7 +259,16 @@
 <AdminNavbar />
 
 <section class="container my-4">
-	<h2 class="mb-4">Solicitudes de Adopción</h2>
+	<div class="d-flex justify-content-between align-items-center mb-4">
+		<h2 class="mb-0">Solicitudes de Adopción</h2>
+		<div class="d-flex align-items-center gap-2">
+			<span class="text-muted small">Ordenar por:</span>
+			<select class="form-select form-select-sm w-auto" bind:value={sortOrder} on:change={renderGrid}>
+				<option value="recent">Más recientes</option>
+				<option value="alphabetical">Mascota (A-Z)</option>
+			</select>
+		</div>
+	</div>
 
 	<!-- TARJETAS RESUMEN -->
 	<div class="row g-3 mb-4">

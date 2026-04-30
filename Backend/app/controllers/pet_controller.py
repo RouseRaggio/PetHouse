@@ -4,7 +4,10 @@ from datetime import datetime
 import base64
 
 from app.models.pet_model import Pet
+from app.models.adoption_model import Adoption
+from app.models.user_model import User
 from app.schemas.pet_schema import PetCreate, PetUpdate
+from app.core.email import send_gps_email
 
 
 # =========================
@@ -40,7 +43,7 @@ def create_pet(db: Session, pet: PetCreate, user_id: int, image: UploadFile = No
     db.add(new_pet)
     db.commit()
     db.refresh(new_pet)
-
+    new_pet.adopter_name = None
     return new_pet
 
 
@@ -50,9 +53,23 @@ def create_pet(db: Session, pet: PetCreate, user_id: int, image: UploadFile = No
 
 def get_pets(db: Session):
 
-    return db.query(Pet).filter(
+    pets = db.query(Pet).filter(
         Pet.deleted_at == None
     ).all()
+
+    for pet in pets:
+        adoption = db.query(Adoption).filter(
+            Adoption.pet_id == pet.id,
+            Adoption.deleted_at == None
+        ).order_by(Adoption.fecha_solicitud.desc()).first()
+        if adoption and adoption.adoptante:
+            pet.adopter_name = f"{adoption.adoptante.name} {adoption.adoptante.last_name}"
+            pet.adopter_id = adoption.adoptante.id
+        else:
+            pet.adopter_name = None
+            pet.adopter_id = None
+    
+    return pets
 
 
 # =========================
@@ -68,6 +85,17 @@ def get_pet(db: Session, pet_id: int):
 
     if not pet:
         raise HTTPException(404, "Mascota no encontrada")
+
+    adoption = db.query(Adoption).filter(
+        Adoption.pet_id == pet.id,
+        Adoption.deleted_at == None
+    ).order_by(Adoption.fecha_solicitud.desc()).first()
+    if adoption and adoption.adoptante:
+        pet.adopter_name = f"{adoption.adoptante.name} {adoption.adoptante.last_name}"
+        pet.adopter_id = adoption.adoptante.id
+    else:
+        pet.adopter_name = None
+        pet.adopter_id = None
 
     return pet
 
@@ -90,6 +118,32 @@ def update_pet(db: Session, pet_id: int, data: PetUpdate):
 
     for key, value in update_data.items():
         setattr(pet, key, value)
+
+    # Si la mascota vuelve a estar disponible, desvincularla del adoptante anterior
+    if "status" in update_data and update_data["status"] == "AVAILABLE":
+        db.query(Adoption).filter(
+            Adoption.pet_id == pet.id,
+            Adoption.deleted_at == None
+        ).update({"deleted_at": datetime.utcnow()}, synchronize_session=False)
+        
+        # Resetear estado GPS
+        pet.gps_status = "none"
+        pet.gps_imei = None
+
+    # Envío de correo si el GPS es aprobado o se actualiza el IMEI
+    is_becoming_approved = ("gps_status" in update_data and update_data["gps_status"] == "approved")
+    is_updating_imei = ("gps_imei" in update_data and pet.gps_status == "approved")
+
+    if is_becoming_approved or is_updating_imei:
+        # Buscar al adoptante para enviarle el correo
+        adoption = db.query(Adoption).filter(
+            Adoption.pet_id == pet.id,
+            Adoption.deleted_at == None
+        ).order_by(Adoption.fecha_solicitud.desc()).first()
+
+        if adoption and adoption.adoptante:
+            print(f"--- Iniciando proceso de envío de correo GPS a {adoption.adoptante.email} ---")
+            send_gps_email(adoption.adoptante.email, adoption.adoptante.name, pet.gps_imei)
 
     db.commit()
     db.refresh(pet)

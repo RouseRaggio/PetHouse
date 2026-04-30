@@ -16,6 +16,7 @@ from app.controllers.user_controller import (
 
 )
 from app.schemas.user_schema import LoginRequest, TokenResponse
+from app.auth.dependencies import get_current_admin_user
 
 router = APIRouter(prefix="/users", tags=["Users"])
 
@@ -26,9 +27,17 @@ def login(data: LoginRequest, db: Session = Depends(get_db)):
     return login_user(db, data.email, data.password)
 
 
-# CREATE
+# REGISTER (Public)
+@router.post("/register", response_model=UserResponse)
+def register(user: UserCreate, db: Session = Depends(get_db)):
+    # Forzar que el rol sea 2 (Usuario normal) para registros públicos
+    user.role_id = 2
+    return create_user(db, user)
+
+
+# CREATE (Admin only)
 @router.post("/", response_model=UserResponse)
-def create(user: UserCreate, db: Session = Depends(get_db)):
+def create(user: UserCreate, db: Session = Depends(get_db), current_admin = Depends(get_current_admin_user)):
     return create_user(db, user)
 
 

@@ -59,11 +59,29 @@ export async function loginUser(email, password) {
 	return await response.json();
 }
 
-/* =========================
-   CREATE USER
-========================= */
 export async function createUser(userData) {
-	const response = await fetch(`${API_URL}/users`, {
+	const response = await fetch(`${API_URL}/users/`, {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/json',
+			'Authorization': `Bearer ${localStorage.getItem('token')}`
+		},
+		body: JSON.stringify(userData)
+	});
+
+	if (!response.ok) {
+		const errorData = await response.json().catch(() => ({}));
+		throw new Error(errorData.detail || 'Error creando usuario');
+	}
+
+	return await response.json();
+}
+
+/* =========================
+   REGISTER USER (Public)
+========================= */
+export async function registerUser(userData) {
+	const response = await fetch(`${API_URL}/users/register`, {
 		method: 'POST',
 		headers: {
 			'Content-Type': 'application/json'
@@ -72,7 +90,8 @@ export async function createUser(userData) {
 	});
 
 	if (!response.ok) {
-		throw new Error('Error creando usuario');
+		const errorData = await response.json().catch(() => ({}));
+		throw new Error(errorData.detail || 'Error en el registro');
 	}
 
 	return await response.json();
@@ -82,19 +101,20 @@ export async function createUser(userData) {
    UPDATE USER
 ========================= */
 export async function updateUser(id, user) {
-	const res = await fetch(`http://localhost:8000/users/${id}`, {
+	const response = await fetch(`${API_URL}/users/${id}`, {
 		method: 'PUT',
 		headers: {
-			'Content-Type': 'application/json'
+			'Content-Type': 'application/json',
+			'Authorization': `Bearer ${localStorage.getItem('token')}`
 		},
 		body: JSON.stringify(user)
 	});
 
-	if (!res.ok) {
+	if (!response.ok) {
 		throw new Error('Error actualizando usuario');
 	}
 
-	return await res.json();
+	return await response.json();
 }
 
 /* =========================

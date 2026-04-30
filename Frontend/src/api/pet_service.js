@@ -71,6 +71,7 @@ export const updatePet = async (id, data) => {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
+        ...getAuthHeaders()
       },
       body: JSON.stringify(data),
     });
@@ -94,6 +95,7 @@ export const deletePet = async (id) => {
   try {
     const response = await fetch(`${API_URL}/pets/${id}`, {
       method: "DELETE",
+      headers: getAuthHeaders()
     });
 
     if (!response.ok) {

@@ -1,5 +1,5 @@
 <script>
-	import { createUser, loginUser } from '../../api/user_service.js';
+	import { createUser, loginUser, registerUser } from '../../api/user_service.js';
 	import { fade, fly } from 'svelte/transition';
 	import Navbar from '$lib/components/Navbar.svelte';
 	import { setAuth } from '$lib/stores/auth.js';
@@ -18,6 +18,18 @@
 	let password = '';
 	let showPassword = false;
 	let authMessage = '';
+	let passwordError = '';
+
+	// Reglas de validación reactivas
+	$: pwdRules = {
+		length: password.length >= 8,
+		upper: /[A-Z]/.test(password),
+		lower: /[a-z]/.test(password),
+		number: /\d/.test(password),
+		special: /[!@#$%^&*(),.?":{}|<>]/.test(password)
+	};
+
+	$: isPasswordValid = Object.values(pwdRules).every(Boolean);
 
 	// Get message from URL if present
 	$: if ($page.url.searchParams.has('message')) {
@@ -50,11 +62,11 @@
 			};
 
 			try {
-				const result = await createUser(userData);
+				const result = await registerUser(userData);
 
 				Swal.fire({
 					title: 'Éxito',
-					text: 'Usuario registrado correctamente',
+					text: 'Usuario registrado correctamente. Ahora puedes iniciar sesión.',
 					icon: 'success'
 				});
 
@@ -67,11 +79,15 @@
 				isRegister = false;
 
 			} catch (error) {
-				Swal.fire({
-					title: 'Error',
-					text: error.message || 'Error registrando usuario',
-					icon: 'error'
-				});
+				passwordError = error.message;
+				// Si el error es de la contraseña, no mostramos modal, solo el texto abajo
+				if (!error.message.includes('contraseña') && !error.message.includes('caracter')) {
+					Swal.fire({
+						title: 'Error',
+						text: error.message || 'Error registrando usuario',
+						icon: 'error'
+					});
+				}
 			}
 
 		} else {
@@ -128,29 +144,28 @@
 
 		<form on:submit|preventDefault={handleSubmit}>
 			{#if isRegister}
-				<div class="input-group" in:fly={{ y: -15, duration: 500 }}>
-					<label for="nombre">Nombre</label>
-					<input id="nombre" type="text" bind:value={nombre} required />
-				</div>
-
-				<div class="input-group" in:fly={{ y: -15, duration: 500 }}>
-					<label for="apellido">Apellido</label>
-					<input id="apellido" type="text" bind:value={apellido} required />
+				<div class="row g-2 mb-2" in:fly={{ y: -15, duration: 500 }}>
+					<div class="col-md-6 text-start">
+						<label for="nombre" class="small fw-bold">Nombre</label>
+						<input id="nombre" class="form-control form-control-sm" type="text" bind:value={nombre} required />
+					</div>
+					<div class="col-md-6 text-start">
+						<label for="apellido" class="small fw-bold">Apellido</label>
+						<input id="apellido" class="form-control form-control-sm" type="text" bind:value={apellido} required />
+					</div>
 				</div>
 			{/if}
 
-			<div class="input-group">
-				<!-- svelte-ignore a11y_label_has_associated_control -->
-				<label>Correo electrónico</label>
-				<input type="email" bind:value={email} placeholder="ejemplo@email.com" required />
+			<div class="input-group mb-2">
+				<label class="small fw-bold">Correo electrónico</label>
+				<input class="form-control form-control-sm" type="email" bind:value={email} placeholder="ejemplo@email.com" required />
 			</div>
 
-			<div class="input-group">
-				<!-- svelte-ignore a11y_label_has_associated_control -->
-				<label>Contraseña</label>
-
+			<div class="input-group mb-2">
+				<label class="small fw-bold">Contraseña</label>
 				<div class="password-wrapper">
 					<input
+						class="form-control form-control-sm"
 						type={showPassword ? 'text' : 'password'}
 						bind:value={password}
 						placeholder="••••••••"
@@ -162,9 +177,34 @@
 						{showPassword ? '👁' : '👁‍🗨'}
 					</span>
 				</div>
+
+				{#if isRegister}
+					<div class="password-guidelines mt-2 p-2 rounded-3 bg-light border-0">
+						<div class="row g-1">
+							<div class="col-6 {pwdRules.length ? 'text-success' : 'text-muted'} x-small">
+								<i class="bi {pwdRules.length ? 'bi-check-circle-fill' : 'bi-circle'}"></i> 8+ chars
+							</div>
+							<div class="col-6 {pwdRules.upper && pwdRules.lower ? 'text-success' : 'text-muted'} x-small">
+								<i class="bi {pwdRules.upper && pwdRules.lower ? 'bi-check-circle-fill' : 'bi-circle'}"></i> Aa
+							</div>
+							<div class="col-6 {pwdRules.number ? 'text-success' : 'text-muted'} x-small">
+								<i class="bi {pwdRules.number ? 'bi-check-circle-fill' : 'bi-circle'}"></i> Número
+							</div>
+							<div class="col-6 {pwdRules.special ? 'text-success' : 'text-muted'} x-small">
+								<i class="bi {pwdRules.special ? 'bi-check-circle-fill' : 'bi-circle'}"></i> Especial
+							</div>
+						</div>
+					</div>
+					
+					{#if passwordError}
+						<div class="error-text text-danger x-small mt-1 fw-bold">
+							{passwordError}
+						</div>
+					{/if}
+				{/if}
 			</div>
 
-			<button class="btn-login">
+			<button class="btn-login py-2 mt-3" disabled={isRegister && !isPasswordValid}>
 				{isRegister ? 'Registrarse' : 'Iniciar Sesión'}
 			</button>
 			
@@ -194,13 +234,13 @@
 
 	.login-card {
 		background: white;
-		padding-top: 2rem;
-		padding-bottom: 1rem;
-		border-radius: 20px;
+		padding: 2rem 1.5rem;
+		border-radius: 24px;
 		width: 100%;
-		max-width: 500px;
-		box-shadow: 0 30px 60px rgba(0, 0, 0, 0.25);
+		max-width: 420px;
+		box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
 		text-align: center;
+		margin: 1rem;
 	}
 
 	.login-card h2 {
@@ -309,5 +349,33 @@
 		background: linear-gradient(135deg, #b89a14, #ecd75f);
 		color: #333;
 		box-shadow: 0 8px 20px rgba(184, 154, 20, 0.3);
+	}
+
+	.password-guidelines {
+		text-align: left;
+		background-color: #f8f9fa !important;
+	}
+
+	.x-small {
+		font-size: 0.75rem;
+	}
+
+	.password-guidelines .row > div {
+		display: flex;
+		align-items: center;
+		gap: 5px;
+		transition: all 0.3s ease;
+	}
+
+	.error-text {
+		text-align: left;
+	}
+
+	.btn-login:disabled {
+		background: #e9ecef;
+		color: #adb5bd;
+		cursor: not-allowed;
+		box-shadow: none;
+		transform: none;
 	}
 </style>

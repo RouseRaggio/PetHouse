@@ -9,6 +9,7 @@
 
 	let pets = [];
 	let grid;
+	let sortOrder = 'recent';
 
 	// =========================
 	// LOAD PETS
@@ -41,10 +42,11 @@
 				'Especie',
 				'Raza',
 				'Estado',
+				{ name: 'Fecha Publicación', sort: true },
 				{
 					name: 'Acciones',
 					formatter: (_, row) => {
-						const pet = row.cells[4]?.data;
+						const pet = row.cells[5]?.data;
 
 						if (!pet) return '';
 
@@ -69,7 +71,21 @@
 					}
 				}
 			],
-			data: pets.map((p) => [p.name, p.species, p.race, p.status === 'AVAILABLE' ? 'Disponible' : p.status, p]),
+			data: [...pets]
+				.sort((a, b) => {
+					if (sortOrder === 'recent') {
+						return new Date(b.created_at) - new Date(a.created_at);
+					}
+					return a.name.localeCompare(b.name);
+				})
+				.map((p) => [
+					p.name,
+					p.species,
+					p.race,
+					p.status === 'AVAILABLE' ? 'Disponible' : p.status,
+					p.created_at ? new Date(p.created_at).toLocaleDateString('es-CO') : '—',
+					p
+				]),
 			search: true,
 			sort: true,
 			pagination: { limit: 10 }
@@ -161,7 +177,16 @@
 <AdminNavbar />
 
 <section class="container my-4">
-	<h2 class="mb-4">Gestión de Mascotas y Publicaciones</h2>
+	<div class="d-flex justify-content-between align-items-center mb-4">
+		<h2 class="mb-0">Gestión de Mascotas y Publicaciones</h2>
+		<div class="d-flex align-items-center gap-2">
+			<span class="text-muted small">Ordenar por:</span>
+			<select class="form-select form-select-sm w-auto" bind:value={sortOrder} on:change={renderGrid}>
+				<option value="recent">Más recientes</option>
+				<option value="alphabetical">Nombre (A-Z)</option>
+			</select>
+		</div>
+	</div>
 
 	<div class="card p-3 shadow-sm">
 		<div id="pets-table-wrapper"></div>

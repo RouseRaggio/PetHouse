@@ -1,4 +1,4 @@
-const BASE_URL = 'http://localhost:8000/pets'; // ojo ahi cambia esto a la URL del backend
+const BASE_URL = 'http://localhost:8000';
 
 export async function getPets() {
 	const res = await fetch(`${BASE_URL}/pets`);
@@ -26,11 +26,25 @@ export async function updatePet(id, petData) {
     return res.json();
 }
 
+
 export async function deletePet(id) {
     const res = await fetch(`${BASE_URL}/pets/${id}`, {
         method: 'DELETE'
     });
     if (!res.ok) throw new Error("Error eliminando mascota");
+    return res.json();
+}
+
+export async function updateUser(id, userData) {
+    const res = await fetch(`${BASE_URL}/users/${id}`, {
+        method: 'PUT',
+        headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify(userData)
+    });
+    if (!res.ok) throw new Error("Error actualizando usuario");
     return res.json();
 }
 

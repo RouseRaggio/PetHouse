@@ -2,7 +2,7 @@
 	import { fade, scale } from 'svelte/transition';
 	import { createEventDispatcher, onMount } from 'svelte';
 	import { goto } from '$app/navigation';
-	import { formatAge } from '$lib/utils/formatAge.js'; 	
+	import { formatAge } from '$lib/utils/formatAge.js';
 
 	export let selectedPet;
 
@@ -11,18 +11,18 @@
 	$: notAvailable = selectedPet.status !== 'AVAILABLE';
 
 	const statusMap = {
-		'AVAILABLE': 'Disponible',
-		'ADOPTED': 'Adoptado',
-		'RESERVED': 'Reservado',
-		'UNAVAILABLE': 'No disponible'
+		AVAILABLE: 'Disponible',
+		ADOPTED: 'Adoptado',
+		RESERVED: 'Reservado',
+		UNAVAILABLE: 'No disponible'
 	};
 	$: statusText = statusMap[selectedPet.status] || selectedPet.status;
-	
+
 	const statusClassMap = {
-		'AVAILABLE': 'disponible',
-		'ADOPTED': 'adoptado',
-		'RESERVED': 'reservado',
-		'UNAVAILABLE': 'no-disponible'
+		AVAILABLE: 'disponible',
+		ADOPTED: 'adoptado',
+		RESERVED: 'reservado',
+		UNAVAILABLE: 'no-disponible'
 	};
 	$: statusClass = statusClassMap[selectedPet.status] || 'adoptado';
 
@@ -61,7 +61,10 @@
 
 		<div class="modal-body">
 			<div class="image-container">
-				<img src={selectedPet.image_url || 'https://via.placeholder.com/400x300?text=Sin+imagen'} alt={selectedPet.name} />
+				<img
+					src={selectedPet.image_url || 'https://via.placeholder.com/400x300?text=Sin+imagen'}
+					alt={selectedPet.name}
+				/>
 			</div>
 
 			<div class="info-container">

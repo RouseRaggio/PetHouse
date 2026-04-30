@@ -9,6 +9,7 @@
 	let gender = '';
 	let description = '';
 	let imageFile = null;
+	let acceptedTerms = false;
 
 	let preview = '';
 	let message = '';
@@ -25,6 +26,12 @@
 	async function publishPet() {
 		if (!name || !species) {
 			message = 'Debes completar los campos obligatorios';
+			success = false;
+			return;
+		}
+
+		if (!acceptedTerms) {
+			message = 'Debes aceptar los términos y condiciones legales para continuar';
 			success = false;
 			return;
 		}
@@ -56,6 +63,7 @@
 			description = '';
 			imageFile = null;
 			preview = '';
+			acceptedTerms = false;
 		} catch (error) {
 			message = error.message;
 			success = false;
@@ -124,11 +132,31 @@
 							<input type="file" class="form-control" accept="image/*" on:change={handleImage} />
 						</div>
 
-						<div class="col-12 mb-3">
+						<div class="col-12 mb-4">
 							<!-- svelte-ignore a11y_label_has_associated_control -->
 							<label class="form-label">Descripción</label>
 							<textarea class="form-control" rows="3" bind:value={description}></textarea>
 						</div>
+					</div>
+
+					<!-- SECCIÓN LEGAL -->
+					<div class="legal-box p-3 bg-light rounded-3 mb-3 border">
+						<h6 class="fw-bold mb-2 small text-primary">
+							<i class="bi bi-shield-check me-1"></i> Compromiso de Responsabilidad
+						</h6>
+						<p class="text-muted mb-0" style="font-size: 0.8rem; line-height: 1.4; text-align: justify;">
+							Al publicar esta mascota, certifico que la información proporcionada es real y que tengo 
+							el derecho de ponerla en adopción. Me comprometo a garantizar el bienestar animal y a no 
+							utilizar este medio para fines lucrativos ilegales o maltrato. PetHouse actúa como intermediario 
+							y se reserva el derecho de retirar publicaciones sospechosas.
+						</p>
+					</div>
+
+					<div class="form-check mb-4">
+						<input class="form-check-input" type="checkbox" id="termsCheck" bind:checked={acceptedTerms} />
+						<label class="form-check-label small" for="termsCheck">
+							Acepto que soy responsable de la veracidad de esta publicación y del trato digno a la mascota.
+						</label>
 					</div>
 
 					<button class="btn btn-primary w-100" on:click={publishPet}> Publicar mascota </button>

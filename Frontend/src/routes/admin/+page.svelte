@@ -10,6 +10,7 @@
 	let users = [];
 	let editUserId = null;
 	let grid;
+	let sortOrder = 'recent'; // 'recent' or 'alphabetical'
 
 	let newUser = {
 		name: '',
@@ -51,10 +52,11 @@
 				'Apellido',
 				'Correo',
 				'Rol',
+				{ name: 'Fecha Registro', sort: true },
 				{
 					name: 'Acciones',
 					formatter: (_, row) => {
-						const user = row.cells[4]?.data;
+						const user = row.cells[5]?.data;
 
 						if (!user) return '';
 
@@ -79,7 +81,21 @@
 					}
 				}
 			],
-			data: users.map((u) => [u.name, u.last_name, u.email, u.role ?? 'Usuario', u]),
+			data: [...users]
+				.sort((a, b) => {
+					if (sortOrder === 'recent') {
+						return new Date(b.created_at) - new Date(a.created_at);
+					}
+					return a.name.localeCompare(b.name);
+				})
+				.map((u) => [
+					u.name,
+					u.last_name,
+					u.email,
+					u.role_id === 1 ? 'Admin' : 'Usuario',
+					u.created_at ? new Date(u.created_at).toLocaleDateString('es-CO') : '—',
+					u
+				]),
 			search: true,
 			sort: true,
 			pagination: { limit: 5 }
@@ -92,6 +108,16 @@
 	// CRUD
 	// =========================
 	async function addUser() {
+		// Validar campos obligatorios
+		if (!newUser.name || !newUser.last_name || !newUser.email || !newUser.password) {
+			Swal.fire({
+				title: 'Campos incompletos',
+				text: 'Por favor, rellena todos los campos, incluyendo la contraseña.',
+				icon: 'warning'
+			});
+			return;
+		}
+
 		const userData = {
 			name: newUser.name,
 			last_name: newUser.last_name,
@@ -102,11 +128,24 @@
 
 		try {
 			await createUser(userData);
+			
+			await Swal.fire({
+				title: '¡Usuario Creado!',
+				text: `El usuario ${userData.name} ha sido registrado correctamente.`,
+				icon: 'success',
+				timer: 2000,
+				showConfirmButton: false
+			});
+
 			await loadUsers();
 			resetForm();
 		} catch (error) {
 			console.error('Error creando usuario:', error);
-			alert('Error creando usuario');
+			Swal.fire({
+				title: 'Error',
+				text: error.message || 'No se pudo crear el usuario. Verifica si el correo ya existe.',
+				icon: 'error'
+			});
 		}
 	}
 
@@ -151,7 +190,7 @@
 			last_name: user.last_name,
 			email: user.email,
 			password: '',
-			role: user.role ?? 'Usuario',
+			role: user.role_id === 1 ? 'Admin' : 'Usuario',
 			status: user.status ?? 'Activo'
 		};
 	}
@@ -198,7 +237,16 @@
 <AdminNavbar />
 
 <section class="container my-4">
-	<h2 class="mb-4">Gestión de Usuarios</h2>
+	<div class="d-flex justify-content-between align-items-center mb-4">
+		<h2 class="mb-0">Gestión de Usuarios</h2>
+		<div class="d-flex align-items-center gap-2">
+			<span class="text-muted small">Ordenar por:</span>
+			<select class="form-select form-select-sm w-auto" bind:value={sortOrder} on:change={renderGrid}>
+				<option value="recent">Más recientes</option>
+				<option value="alphabetical">Nombre (A-Z)</option>
+			</select>
+		</div>
+	</div>
 
 	<!-- FORMULARIO -->
 	<div class="card mb-4 p-3">
@@ -236,15 +284,13 @@
 
 		<div class="mt-3">
 			{#if editUserId}
-				<button class="btn btn-success me-2" on:click={saveEdit}>Guardar</button>
-				<button class="btn btn-secondary" on:click={cancelEdit}>Cancelar</button>
+				<button class="btn btn-success me-2 px-4 shadow-sm" on:click={saveEdit}>
+					<i class="bi bi-save me-1"></i> Guardar Cambios
+				</button>
+				<button class="btn btn-light border px-4" on:click={cancelEdit}>Cancelar</button>
 			{:else}
-				<button
-					class="btn btn-primary"
-					on:click={addUser}
-					disabled={!newUser.name || !newUser.last_name || !newUser.email || !newUser.password}
-				>
-					Agregar Usuario
+				<button class="btn btn-primary px-4 shadow-sm" on:click={addUser}>
+					<i class="bi bi-person-plus-fill me-1"></i> Agregar Usuario
 				</button>
 			{/if}
 		</div>
