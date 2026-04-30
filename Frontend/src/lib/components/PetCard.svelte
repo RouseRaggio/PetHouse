@@ -17,101 +17,252 @@
 	};
 	$: statusText = statusMap[pet.status] || pet.status;
 
-	const statusBadgeMap = {
-		'AVAILABLE': 'bg-success',
-		'ADOPTED': 'bg-secondary',
-		'RESERVED': 'bg-warning text-dark',
-		'UNAVAILABLE': 'bg-danger'
+	const statusColorMap = {
+		'AVAILABLE': 'status-available',
+		'ADOPTED': 'status-adopted',
+		'RESERVED': 'status-reserved',
+		'UNAVAILABLE': 'status-unavailable'
 	};
-	$: statusBadgeClass = statusBadgeMap[pet.status] || 'bg-light text-dark';
+	$: statusColorClass = statusColorMap[pet.status] || 'status-adopted';
+
+	// Emoji por especie
+	const speciesEmoji = {
+		'perro': '🐕',
+		'gato': '🐱',
+		'conejo': '🐰',
+		'ave': '🐦',
+		'hamster': '🐹',
+		'tortuga': '🐢',
+		'pez': '🐟',
+	};
+	$: emoji = speciesEmoji[pet.species?.toLowerCase()] || '🐾';
 </script>
 
-<div class="card pet-card border-0 shadow-sm h-100 overflow-hidden" on:click={() => dispatch('view')}>
-	<div class="position-relative">
+<!-- svelte-ignore a11y_click_events_have_key_events -->
+<!-- svelte-ignore a11y_no_static_element_interactions -->
+<div class="pet-card-cartoon" on:click={() => dispatch('view')}>
+	<div class="card-image-wrap">
 		<img 
 			src={pet.image_url || 'https://via.placeholder.com/300x200?text=Sin+imagen'} 
-			class="card-img-top pet-img" 
+			class="card-img" 
 			alt={pet.name} 
 		/>
-		<span class="badge {statusBadgeClass} position-absolute top-0 start-0 m-3 shadow-sm px-3 py-2 rounded-pill">
+		<span class="status-tag {statusColorClass}">
 			{statusText}
 		</span>
 		
 		{#if pet.gender}
-			<span class="gender-badge position-absolute top-0 end-0 m-3 {pet.gender === 'macho' ? 'male' : 'female'}">
-				<i class="bi {pet.gender === 'macho' ? 'bi-gender-male' : 'bi-gender-female'}"></i>
+			<span class="gender-tag {pet.gender === 'macho' ? 'male' : 'female'}">
+				{pet.gender === 'macho' ? '♂' : '♀'}
 			</span>
 		{/if}
+
+		<span class="species-emoji">{emoji}</span>
 	</div>
 
-	<div class="card-body p-4">
-		<div class="d-flex justify-content-between align-items-start mb-2">
-			<h4 class="fw-bold text-dark mb-0">{pet.name}</h4>
-			<span class="text-primary small fw-bold text-uppercase ls-1">{pet.species}</span>
-		</div>
+	<div class="card-content">
+		<h4 class="pet-name">{pet.name}</h4>
 		
-		<p class="text-muted small mb-3">
-			<i class="bi bi-clock me-1"></i> {ageText}
+		<div class="pet-details">
+			<span class="detail-chip">
+				<i class="bi bi-clock"></i> {ageText}
+			</span>
 			{#if pet.race}
-				<span class="mx-1">•</span> <i class="bi bi-tag me-1"></i> {pet.race}
+				<span class="detail-chip">
+					<i class="bi bi-tag"></i> {pet.race}
+				</span>
 			{/if}
-		</p>
+		</div>
 
-		<button class="btn btn-primary w-100 rounded-pill py-2 fw-bold shadow-sm">
-			Ver Perfil
+		<button class="btn-view-profile">
+			Ver Perfil 🐾
 		</button>
 	</div>
 </div>
 
 <style>
-	.pet-card {
+	.pet-card-cartoon {
 		cursor: pointer;
-		transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-		border-radius: 24px;
+		background: white;
+		border: 3px solid var(--ink);
+		border-radius: 20px;
+		overflow: hidden;
+		box-shadow: 4px 4px 0px var(--ink);
+		transition: all 0.35s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+		height: 100%;
+		display: flex;
+		flex-direction: column;
 	}
 
-	.pet-img {
-		height: 250px;
+	.pet-card-cartoon:hover {
+		transform: translateY(-8px) rotate(-1deg);
+		box-shadow: 7px 7px 0px var(--ink);
+	}
+
+	.pet-card-cartoon:active {
+		transform: translateY(-2px) rotate(0deg);
+		box-shadow: 2px 2px 0px var(--ink);
+	}
+
+	/* Image area */
+	.card-image-wrap {
+		position: relative;
+		overflow: hidden;
+		aspect-ratio: 4 / 3;
+	}
+
+	.card-img {
+		width: 100%;
+		height: 100%;
 		object-fit: cover;
 		transition: transform 0.5s ease;
+		border-bottom: 3px solid var(--ink);
+		display: block;
 	}
 
-	.pet-card:hover {
-		transform: translateY(-10px);
-		box-shadow: 0 20px 40px rgba(0, 0, 0, 0.12) !important;
+	.pet-card-cartoon:hover .card-img {
+		transform: scale(1.08);
 	}
 
-	.pet-card:hover .pet-img {
-		transform: scale(1.05);
+	/* Status tag */
+	.status-tag {
+		position: absolute;
+		top: 12px;
+		left: 12px;
+		padding: 4px 14px;
+		border-radius: 50px;
+		font-size: 0.75rem;
+		font-weight: 800;
+		font-family: var(--font-display);
+		border: 2.5px solid var(--ink);
+		box-shadow: 2px 2px 0 var(--ink);
+		letter-spacing: 0.3px;
 	}
 
-	.ls-1 {
-		letter-spacing: 1px;
+	.status-available {
+		background: #B8F0B0;
+		color: #1B5E20;
+	}
+	.status-adopted {
+		background: var(--light-gray);
+		color: var(--warm-gray);
+	}
+	.status-reserved {
+		background: #FFE082;
+		color: #6D4C00;
+	}
+	.status-unavailable {
+		background: #FFAB91;
+		color: #B71C1C;
 	}
 
-	.gender-badge {
-		width: 35px;
-		height: 35px;
+	/* Gender badge */
+	.gender-tag {
+		position: absolute;
+		top: 12px;
+		right: 12px;
+		width: 32px;
+		height: 32px;
 		display: flex;
 		align-items: center;
 		justify-content: center;
 		border-radius: 50%;
-		background: rgba(255, 255, 255, 0.9);
-		backdrop-filter: blur(4px);
-		font-size: 1.2rem;
-		box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+		border: 2.5px solid var(--ink);
+		font-size: 1rem;
+		font-weight: bold;
+		box-shadow: 2px 2px 0 var(--ink);
+		background: white;
 	}
 
-	.gender-badge.male { color: #0d6efd; }
-	.gender-badge.female { color: #d63384; }
+	.gender-tag.male { color: #2196F3; }
+	.gender-tag.female { color: #E91E63; }
 
-	.btn-primary {
-		background: #4361ee;
-		border: none;
-		transition: all 0.3s ease;
+	/* Species emoji float */
+	.species-emoji {
+		position: absolute;
+		bottom: -16px;
+		right: 16px;
+		font-size: 2rem;
+		background: var(--mustard);
+		width: 42px;
+		height: 42px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		border-radius: 50%;
+		border: 2.5px solid var(--ink);
+		box-shadow: 2px 2px 0 var(--ink);
+		z-index: 2;
+		transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
 	}
-	.btn-primary:hover {
-		background: #3046bc;
-		transform: scale(1.02);
+
+	.pet-card-cartoon:hover .species-emoji {
+		transform: scale(1.15) rotate(-10deg);
+	}
+
+	/* Card content */
+	.card-content {
+		padding: 1.2rem 1.2rem 1rem;
+		display: flex;
+		flex-direction: column;
+		flex: 1;
+	}
+
+	.pet-name {
+		font-family: var(--font-display);
+		font-size: 1.3rem;
+		font-weight: 800;
+		color: var(--ink);
+		margin: 0 0 0.5rem 0;
+	}
+
+	.pet-details {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 6px;
+		margin-bottom: 0.8rem;
+	}
+
+	.detail-chip {
+		font-size: 0.78rem;
+		font-weight: 600;
+		color: var(--warm-gray);
+		background: var(--cream-dark);
+		padding: 3px 10px;
+		border-radius: 50px;
+		border: 1.5px solid var(--light-gray);
+		font-family: var(--font-body);
+	}
+
+	.detail-chip i {
+		margin-right: 2px;
+	}
+
+	/* View profile button */
+	.btn-view-profile {
+		margin-top: auto;
+		width: 100%;
+		padding: 10px;
+		background: var(--teal);
+		color: white;
+		border: 2.5px solid var(--ink);
+		border-radius: 50px;
+		font-family: var(--font-display);
+		font-weight: 700;
+		font-size: 0.95rem;
+		cursor: pointer;
+		box-shadow: 3px 3px 0 var(--ink);
+		transition: all 0.25s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+	}
+
+	.btn-view-profile:hover {
+		background: var(--coral);
+		transform: translateY(-3px);
+		box-shadow: 4px 4px 0 var(--ink);
+	}
+
+	.btn-view-profile:active {
+		transform: translateY(1px);
+		box-shadow: 1px 1px 0 var(--ink);
 	}
 </style>

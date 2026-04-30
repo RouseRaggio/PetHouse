@@ -1,6 +1,7 @@
 <script>
 	import { onMount } from 'svelte';
 	import Navbar from '$lib/components/Navbar.svelte';
+	import { formatAge } from '$lib/utils/formatAge.js';
 
 	export let data;
 
@@ -12,6 +13,8 @@
 	let acceptedTerms = false;
 	let message = '';
 	let success = false;
+
+	$: ageText = pet ? formatAge(pet.birth_date) : 'Desconocida';
 
 	const API = 'http://localhost:8000';
 
@@ -127,7 +130,7 @@
 							<div>
 								<h5 class="mb-0 fw-bold">{pet.name}</h5>
 								<p class="text-muted mb-0">
-									{pet.age ?? '?'} meses · {pet.species ?? ''} · {pet.gender ?? ''}
+									{ageText} · {pet.species ?? ''} · {pet.gender ?? ''}
 								</p>
 								{#if pet.race}<small class="text-muted">{pet.race}</small>{/if}
 							</div>

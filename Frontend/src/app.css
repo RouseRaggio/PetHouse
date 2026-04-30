@@ -1,57 +1,135 @@
-/* Tipografía global */
+/* ============================================
+   PetHouse — Cartoon / Editorial Design System
+   Estilo: Saturday morning cartoon + Oatly/Mailchimp
+   Paleta: Cálida, optimista, hecha a mano
+   ============================================ */
+
+/* --- Design Tokens --- */
+:root {
+	/* Paleta principal — cálida y juguetona */
+	--cream: #FFF8F0;
+	--cream-dark: #F5ECDF;
+	--mustard: #F5B731;
+	--mustard-dark: #D99E1B;
+	--coral: #FF6B6B;
+	--coral-dark: #E05555;
+	--teal: #2EC4B6;
+	--teal-dark: #1FA899;
+	--sky: #70C1E8;
+	--lavender: #B8A9E8;
+	--peach: #FFB59A;
+	--leaf: #8CCB76;
+	--charcoal: #2D2D2D;
+	--ink: #1A1A2E;
+	--warm-gray: #7A7572;
+	--light-gray: #E8E2DA;
+
+	/* Tipografía */
+	--font-display: 'Baloo 2', cursive;
+	--font-body: 'Nunito', sans-serif;
+	--font-handwritten: 'Caveat', cursive;
+
+	/* Bordes cartoon */
+	--border-thick: 3px solid var(--ink);
+	--border-medium: 2.5px solid var(--ink);
+	--border-thin: 2px solid var(--ink);
+	--radius-blob: 20px;
+	--radius-pill: 50px;
+	--radius-circle: 50%;
+
+	/* Sombras "hand-drawn" */
+	--shadow-cartoon: 4px 4px 0px var(--ink);
+	--shadow-cartoon-sm: 3px 3px 0px var(--ink);
+	--shadow-cartoon-lg: 6px 6px 0px var(--ink);
+	--shadow-soft: 0 8px 30px rgba(0, 0, 0, 0.08);
+	--shadow-hover: 6px 6px 0px var(--ink);
+
+	/* Transiciones */
+	--bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+	--smooth: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* --- Reset & Base --- */
+*, *::before, *::after {
+	box-sizing: border-box;
+}
+
 body {
 	margin: 0;
-	font-family: 'Raleway', sans-serif;
-	background-color: #ffffff;
+	font-family: var(--font-body);
+	background-color: var(--cream);
+	color: var(--charcoal);
+	line-height: 1.6;
+	overflow-x: hidden;
+	-webkit-font-smoothing: antialiased;
 }
 
 a {
 	text-decoration: none;
+	color: inherit;
 }
 
-/* Altura y transición */
+h1, h2, h3, h4, h5 {
+	font-family: var(--font-display);
+	font-weight: 700;
+	color: var(--ink);
+	line-height: 1.2;
+}
+
+/* --- Navbar Cartoon --- */
 .navbar {
-	transition: all 0.3s ease;
-	padding: 14px 0;
+	transition: all 0.4s var(--smooth);
+	padding: 12px 0;
+	z-index: 100;
 }
 
-/* Estado inicial */
 .navbar-top {
-	background: #ffffff;
+	background: var(--cream);
 }
 
-/* Cuando se hace scroll */
 .navbar-scrolled {
-	background: white;
-	padding: 10px 0;
+	background: var(--cream);
+	padding: 8px 0;
+	box-shadow: 0 4px 0 var(--ink);
 }
 
-/* Logo llamativo */
 .brand-logo {
-	font-family: 'Dancing Script', cursive;
-	font-size: 2rem;
-	color: #696969;
-	transition: color 0.3s ease;
+	font-family: var(--font-display);
+	font-size: 2.2rem;
+	font-weight: 800;
+	color: var(--ink);
+	transition: all 0.3s var(--bounce);
+	position: relative;
 }
 
 .brand-logo:hover {
-	color: #ffcb1b;
+	color: var(--coral);
+	transform: rotate(-3deg) scale(1.05);
 }
 
-/* Links */
+/* Links nav */
 .nav-custom {
+	font-family: var(--font-display);
 	font-weight: 600;
-	color: #696969;
-	margin-left: 20px;
-	transition: color 0.3s ease;
+	font-size: 1.05rem;
+	color: var(--ink);
+	margin-left: 8px;
+	padding: 6px 16px !important;
+	border-radius: var(--radius-pill);
+	transition: all 0.3s var(--bounce);
+	position: relative;
 }
 
 .nav-custom:hover {
-	color: #ffcb1b;
+	color: var(--cream);
+	background: var(--coral);
+	transform: translateY(-2px) rotate(-1deg);
+	box-shadow: var(--shadow-cartoon-sm);
+	border: var(--border-thin);
 }
 
 .login-navbar {
-	background: #ffffff;
+	background: var(--cream);
 	padding: 10px 0;
 	margin: 0;
 	box-shadow: none;
@@ -59,47 +137,51 @@ a {
 
 /* Botón login */
 .btn-login {
-	background: #ffcb1b;
-	color: white;
+	background: var(--mustard);
+	color: var(--ink);
 	padding: 8px 18px;
+	font-weight: 700;
+	border: var(--border-thick);
+	border-radius: var(--radius-pill);
+	box-shadow: var(--shadow-cartoon-sm);
+	transition: all 0.25s var(--bounce);
 }
 
 .btn-login:hover {
-	background: #ffcb1b;
+	background: var(--coral);
+	color: white;
+	transform: translateY(-3px);
+	box-shadow: var(--shadow-cartoon);
 }
 
+/* --- Hero Cartoon --- */
 .hero-section {
 	position: relative;
-	background-color: #ffffff;
-	background-image: url('/img/mascotas_fondo.png');
-	background-size: cover;
-	background-position: center;
-	min-height: 70vh;
+	background-color: var(--cream);
+	background-image: none;
+	min-height: auto;
+	padding: 2rem 0 0 0;
+	overflow: hidden;
 }
 
-.overlay {
-	position: absolute;
-	top: 0;
-	left: 0;
-	width: 100%;
-	height: 100%;
-	background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(78, 76, 76, 0.4));
+.hero-section .overlay {
+	display: none;
 }
 
+/* --- Modal Cartoon --- */
 .modal-backdrop {
 	position: fixed;
 	inset: 0;
-	background: rgba(0, 0, 0, 0.6);
+	background: rgba(26, 26, 46, 0.5);
 	z-index: 1000;
 }
 
-/* Modal*/
 .modal-overlay {
 	position: fixed;
 	inset: 0;
-	background: rgba(0, 0, 0, 0.5);
-	backdrop-filter: blur(6px);
-	-webkit-backdrop-filter: blur(6px);
+	background: rgba(26, 26, 46, 0.45);
+	backdrop-filter: blur(8px);
+	-webkit-backdrop-filter: blur(8px);
 	display: flex;
 	justify-content: center;
 	align-items: center;
@@ -108,13 +190,14 @@ a {
 }
 
 .modal-card {
-	background: white;
-	border-radius: 16px;
+	background: var(--cream);
+	border-radius: var(--radius-blob);
+	border: var(--border-thick);
 	width: 100%;
 	max-width: 850px;
 	max-height: 90vh;
 	overflow: hidden;
-	box-shadow: 0 25px 60px rgba(0, 0, 0, 0.3);
+	box-shadow: var(--shadow-cartoon-lg);
 	position: relative;
 }
 
@@ -136,6 +219,7 @@ a {
 .image-container img:hover {
 	transform: scale(1.05);
 }
+
 .info-container {
 	flex: 1;
 	padding: 2rem;
@@ -144,68 +228,112 @@ a {
 	justify-content: center;
 }
 
-.close-btn {
-	position: absolute;
-	top: 15px;
-	right: 20px;
-	z-index: 10;
-	background: none;
-	border: none;
+.info-container h3 {
+	font-family: var(--font-display);
 	font-size: 1.8rem;
-	cursor: pointer;
+	margin-bottom: 0.5rem;
 }
 
+.info-container p {
+	font-family: var(--font-body);
+	color: var(--warm-gray);
+	margin-bottom: 0.4rem;
+}
+
+.info-container strong {
+	color: var(--ink);
+}
+
+.close-btn {
+	position: absolute;
+	top: 12px;
+	right: 16px;
+	z-index: 10;
+	background: var(--coral);
+	border: var(--border-thin);
+	width: 40px;
+	height: 40px;
+	border-radius: var(--radius-circle);
+	font-size: 1.4rem;
+	cursor: pointer;
+	color: white;
+	font-weight: bold;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	box-shadow: var(--shadow-cartoon-sm);
+	transition: all 0.2s var(--bounce);
+	line-height: 1;
+}
+
+.close-btn:hover {
+	background: var(--coral-dark);
+	transform: rotate(90deg) scale(1.1);
+}
+
+/* Status Badges Cartoon */
 .status-badge {
 	display: inline-block;
-	padding: 0.4rem 0.8rem;
-	border-radius: 20px;
+	padding: 0.35rem 0.9rem;
+	border-radius: var(--radius-pill);
 	font-size: 0.8rem;
-	font-weight: 600;
+	font-weight: 700;
+	font-family: var(--font-display);
 	margin-bottom: 1rem;
+	border: var(--border-thin);
+	box-shadow: var(--shadow-cartoon-sm);
+	letter-spacing: 0.5px;
 }
 
 .status-badge.disponible {
-	background: #d1e7dd;
-	color: #0f5132;
+	background: #C8F7C5;
+	color: #1B5E20;
 }
 
 .status-badge.adoptado {
-	background: #e2e3e5;
-	color: #41464c;
+	background: var(--light-gray);
+	color: var(--warm-gray);
 }
 
 .status-badge.reservado {
-	background: #fff3cd;
-	color: #664d03;
+	background: #FFF0B3;
+	color: #8B6914;
 }
 
 .status-badge.no-disponible {
-	background: #f8d7da;
-	color: #842029;
+	background: #FFCDD2;
+	color: #B71C1C;
 }
 
+/* Botón Adoptar Cartoon */
 .btn-adopt {
 	margin-top: 1.5rem;
-	padding: 0.8rem;
-	background: linear-gradient(135deg, #198754, #157347);
+	padding: 0.9rem 1.5rem;
+	background: var(--teal);
 	color: white;
-	border: none;
-	border-radius: 12px;
-	font-weight: 600;
+	border: var(--border-thick);
+	border-radius: var(--radius-pill);
+	font-weight: 800;
+	font-family: var(--font-display);
+	font-size: 1.05rem;
 	cursor: pointer;
-	transition: all 0.25s ease;
-	box-shadow: 0 6px 15px rgba(25, 135, 84, 0.3);
+	transition: all 0.25s var(--bounce);
+	box-shadow: var(--shadow-cartoon);
+	letter-spacing: 0.5px;
 }
 
 .btn-adopt:hover {
-	transform: translateY(-3px);
-	box-shadow: 0 10px 25px rgba(25, 135, 84, 0.4);
+	transform: translateY(-4px) rotate(-1deg);
+	box-shadow: var(--shadow-cartoon-lg);
+	background: var(--teal-dark);
 }
 
 .btn-adopt:disabled {
-	background: #6c757d;
+	background: var(--light-gray);
+	color: var(--warm-gray);
 	cursor: not-allowed;
 	transform: none;
+	box-shadow: var(--shadow-cartoon-sm);
 }
 
 @media (max-width: 768px) {
@@ -217,8 +345,56 @@ a {
 		height: 250px;
 	}
 }
+
 .input-group {
 	display: flex;
 	flex-direction: column;
 	gap: 6px;
 }
+
+/* --- Decorative Wiggle Animation --- */
+@keyframes wiggle {
+	0%, 100% { transform: rotate(0deg); }
+	25% { transform: rotate(-3deg); }
+	75% { transform: rotate(3deg); }
+}
+
+@keyframes float {
+	0%, 100% { transform: translateY(0); }
+	50% { transform: translateY(-8px); }
+}
+
+@keyframes bounce-in {
+	0% { transform: scale(0.3); opacity: 0; }
+	50% { transform: scale(1.05); }
+	70% { transform: scale(0.95); }
+	100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes squish {
+	0%, 100% { transform: scaleX(1) scaleY(1); }
+	50% { transform: scaleX(1.05) scaleY(0.95); }
+}
+
+/* Floating paw prints decoration */
+@keyframes paw-float {
+	0% { transform: translateY(0) rotate(0deg); opacity: 0.15; }
+	50% { transform: translateY(-20px) rotate(15deg); opacity: 0.25; }
+	100% { transform: translateY(0) rotate(0deg); opacity: 0.15; }
+}
+
+/* --- Utility classes --- */
+.font-hand {
+	font-family: var(--font-handwritten);
+}
+
+.font-display {
+	font-family: var(--font-display);
+}
+
+.text-coral { color: var(--coral); }
+.text-teal { color: var(--teal); }
+.text-mustard { color: var(--mustard); }
+.text-ink { color: var(--ink); }
+.bg-cream { background-color: var(--cream); }
+.bg-cream-dark { background-color: var(--cream-dark); }
