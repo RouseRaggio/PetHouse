@@ -7,4 +7,5 @@ from .role_permission_model import RolePermission
 from .tracker_model import Tracker
 from .trackerLocation_model import TrackerLocation
 from .user_model import User
+from .audit_log_model import AuditLog
 

@@ -17,6 +17,7 @@ from app.routes.role_permission_routes import router as role_permission_router
 from app.routes.permission_routes import router as permission_router
 from app.routes.tracker_routes import router as tracker_router
 from app.routes.tracker_location_routes import router as tracker_location_router
+from app.routes.audit_log_routes import router as audit_log_router
 
 
 app = FastAPI()
@@ -37,6 +38,10 @@ app.add_middleware(
         "http://127.0.0.1:5174",
         "http://localhost:5175",
         "http://127.0.0.1:5175",
+        "http://localhost:4173",
+        "http://127.0.0.1:4173",
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
     ],
     allow_credentials=True,
     allow_methods=["*"],
@@ -60,6 +65,7 @@ app.include_router(role_permission_router)
 app.include_router(permission_router)
 app.include_router(tracker_router)
 app.include_router(tracker_location_router)
+app.include_router(audit_log_router)
 
 
 

@@ -8,6 +8,7 @@ from app.core.security import hash_password
 from app.core.security import verify_password
 from app.auth.jwt_handler import create_access_token
 from app.core.email import send_gps_email
+from app.controllers.audit_log_controller import log_action
 
 
 # =========================
@@ -35,6 +36,19 @@ def create_user(db: Session, user: UserCreate):
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
+
+    try:
+        log_action(
+            db=db,
+            user_id=None,
+            action="create",
+            resource="user",
+            resource_id=new_user.id,
+            changes=user.dict(exclude={"password"}),
+            status="success"
+        )
+    except Exception as e:
+        print(f"Audit logging error: {e}")
 
     return new_user
 
@@ -119,6 +133,19 @@ def update_user(db: Session, user_id: int, data: UserUpdate):
     db.commit()
     db.refresh(user)
 
+    try:
+        log_action(
+            db=db,
+            user_id=None,
+            action="update",
+            resource="user",
+            resource_id=user.id,
+            changes=update_data,
+            status="success"
+        )
+    except Exception as e:
+        print(f"Audit logging error: {e}")
+
     # Envío de correo real si el GPS es aprobado O si se actualiza el IMEI de un usuario ya aprobado
     is_becoming_approved = ("gps_status" in update_data and update_data["gps_status"] == "approved")
     is_updating_imei = ("gps_imei" in update_data and user.gps_status == "approved")
@@ -145,6 +172,19 @@ def login_user(db: Session, email: str, password: str):
 
     # Create JWT token
     access_token = create_access_token(data={"sub": str(user.id)})
+
+    try:
+        log_action(
+            db=db,
+            user_id=user.id,
+            action="login",
+            resource="user",
+            resource_id=user.id,
+            details="Login exitoso",
+            status="success"
+        )
+    except Exception as e:
+        print(f"Audit logging error: {e}")
 
     return {
         "access_token": access_token,
@@ -181,6 +221,19 @@ def delete_user(db: Session, user_id: int):
 
     db.commit()
 
+    try:
+        log_action(
+            db=db,
+            user_id=None,
+            action="delete",
+            resource="user",
+            resource_id=user.id,
+            details=f"Usuario {user.email} eliminado",
+            status="success"
+        )
+    except Exception as e:
+        print(f"Audit logging error: {e}")
+
     return {"message": "Usuario eliminado lógicamente"}
 
 
@@ -202,5 +255,18 @@ def restore_user(db: Session, user_id: int):
     user.is_active = True
 
     db.commit()
+
+    try:
+        log_action(
+            db=db,
+            user_id=None,
+            action="restore",
+            resource="user",
+            resource_id=user.id,
+            details=f"Usuario {user.email} restaurado",
+            status="success"
+        )
+    except Exception as e:
+        print(f"Audit logging error: {e}")
 
     return {"message": "Usuario restaurado correctamente"}

@@ -16,3 +16,5 @@ CREATE TABLE usuarios (
 -- Insertar registro
 INSERT INTO usuarios (nombre, apellido, cedula, edad, usuario, contrasena)
 VALUES ('pedro', 'perez', '10102020', 30, 'pperez', '12345');
+
+

@@ -53,6 +53,7 @@ class PetResponse(BaseModel):
     gps_imei: Optional[str] = None
     adopter_name: Optional[str] = None
     adopter_id: Optional[int] = None
+    publisher_name: Optional[str] = None
     created_at: datetime
 
     class Config:

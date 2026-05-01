@@ -1,5 +1,6 @@
 <script>
 	import { onMount, tick } from 'svelte';
+	import { fly } from 'svelte/transition';
 	import { Grid, h } from 'gridjs';
 	import 'gridjs/dist/theme/mermaid.css';
 	import Swal from 'sweetalert2';
@@ -10,6 +11,11 @@
 	let pets = [];
 	let grid;
 	let sortOrder = 'recent';
+
+	// Reactividad para asegurar que cargue sin refrescar
+	$: if (pets) {
+		tick().then(() => renderGrid());
+	}
 
 	// =========================
 	// LOAD PETS
@@ -34,40 +40,64 @@
 	// GRID
 	// =========================
 	function renderGrid() {
+		const container = document.getElementById('pets-table-wrapper');
+		if (!container) return;
 		if (grid) grid.destroy();
 
 		grid = new Grid({
 			columns: [
 				'Nombre',
+				{
+					name: 'Publicado por',
+					formatter: (cell) => h('span', { className: 'fw-bold text-primary' }, cell)
+				},
 				'Especie',
 				'Raza',
-				'Estado',
-				{ name: 'Fecha Publicación', sort: true },
+				{
+					name: 'Estado',
+					formatter: (cell) => {
+						const statusMap = {
+							'PENDING_APPROVAL': { text: '🟠 Solicitud', class: 'badge bg-warning text-dark' },
+							'AVAILABLE': { text: '🟢 Publicada', class: 'badge bg-success' },
+							'ADOPTED': { text: '🔵 Adoptada', class: 'badge bg-info' },
+							'REJECTED': { text: '🔴 Rechazada', class: 'badge bg-danger' }
+						};
+						const info = statusMap[cell] || { text: cell, class: 'badge bg-secondary' };
+						return h('span', { className: info.class + ' p-2 rounded-pill shadow-sm' }, info.text);
+					}
+				},
+				{ name: 'Fecha Registro', sort: true },
 				{
 					name: 'Acciones',
 					formatter: (_, row) => {
-						const pet = row.cells[5]?.data;
-
+						const pet = row.cells[6]?.data;
 						if (!pet) return '';
 
-						return h('div', {}, [
-							h(
-								'button',
-								{
-									className: 'btn btn-sm btn-warning me-1',
-									onClick: () => editPetStatus(pet)
-								},
-								'Editar Estado'
-							),
-							h(
-								'button',
-								{
-									className: 'btn btn-sm btn-danger',
-									onClick: () => removePet(pet.id)
-								},
-								'Eliminar'
-							)
-						]);
+						const buttons = [];
+
+						if (pet.status === 'PENDING_APPROVAL') {
+							buttons.push(h('button', {
+								className: 'btn btn-sm btn-success me-1 shadow-sm',
+								onClick: () => approvePet(pet)
+							}, 'Aprobar'));
+							
+							buttons.push(h('button', {
+								className: 'btn btn-sm btn-outline-danger me-1 shadow-sm',
+								onClick: () => rejectPet(pet)
+							}, 'Rechazar'));
+						}
+
+						buttons.push(h('button', {
+							className: 'btn btn-sm btn-light border me-1 shadow-sm',
+							onClick: () => editPetStatus(pet)
+						}, '⚙️'));
+
+						buttons.push(h('button', {
+							className: 'btn btn-sm btn-outline-danger shadow-sm',
+							onClick: () => removePet(pet.id)
+						}, '🗑️'));
+
+						return h('div', { className: 'd-flex' }, buttons);
 					}
 				}
 			],
@@ -80,75 +110,104 @@
 				})
 				.map((p) => [
 					p.name,
+					p.publisher_name || 'Desconocido',
 					p.species,
 					p.race,
-					p.status === 'AVAILABLE' ? 'Disponible' : p.status,
+					p.status,
 					p.created_at ? new Date(p.created_at).toLocaleDateString('es-CO') : '—',
 					p
 				]),
 			search: true,
 			sort: true,
-			pagination: { limit: 10 }
+			pagination: { limit: 10 },
+			language: {
+				search: { placeholder: '🔍 Buscar mascota o usuario...' },
+				pagination: { previous: 'Anterior', next: 'Siguiente' }
+			}
 		});
 
-		grid.render(document.getElementById('pets-table-wrapper'));
+		grid.render(container);
 	}
 
 	// =========================
 	// ACTIONS
 	// =========================
-	async function removePet(id) {
+	async function approvePet(pet) {
 		const result = await Swal.fire({
-			title: '¿Eliminar mascota?',
-			text: 'La publicación será eliminada permanentemente.',
+			title: '¿Aprobar publicación?',
+			text: `La mascota "${pet.name}" será visible en el catálogo público.`,
+			icon: 'question',
+			showCancelButton: true,
+			confirmButtonText: 'Sí, publicar',
+			confirmButtonColor: '#4361ee'
+		});
+
+		if (result.isConfirmed) {
+			try {
+				await updatePet(pet.id, { status: 'AVAILABLE' });
+				Swal.fire('¡Publicada!', 'La mascota ahora es visible.', 'success');
+				await loadPets();
+			} catch (e) { Swal.fire('Error', e.message, 'error'); }
+		}
+	}
+
+	async function rejectPet(pet) {
+		const result = await Swal.fire({
+			title: '¿Rechazar solicitud?',
+			text: 'Se le notificará al usuario que la solicitud fue rechazada.',
 			icon: 'warning',
 			showCancelButton: true,
-			confirmButtonText: 'Sí, eliminar',
-			cancelButtonText: 'Cancelar'
+			confirmButtonText: 'Sí, rechazar',
+			confirmButtonColor: '#ff6b6b'
+		});
+
+		if (result.isConfirmed) {
+			try {
+				await updatePet(pet.id, { status: 'REJECTED' });
+				Swal.fire('Rechazada', 'La solicitud ha sido marcada como rechazada.', 'success');
+				await loadPets();
+			} catch (e) { Swal.fire('Error', e.message, 'error'); }
+		}
+	}
+
+	async function removePet(id) {
+		const result = await Swal.fire({
+			title: '¿Eliminar permanentemente?',
+			text: 'Esta acción borrará todos los datos de la mascota.',
+			icon: 'error',
+			showCancelButton: true,
+			confirmButtonText: 'Sí, borrar',
+			confirmButtonColor: '#d33'
 		});
 
 		if (!result.isConfirmed) return;
 
 		try {
 			await deletePet(id);
-
-			await Swal.fire({
-				title: 'Eliminada',
-				text: 'La publicación fue eliminada correctamente',
-				icon: 'success'
-			});
-
 			await loadPets();
-		} catch (error) {
-			console.error('Error eliminando mascota:', error);
-
-			Swal.fire({
-				title: 'Error',
-				text: 'No se pudo eliminar la mascota',
-				icon: 'error'
-			});
-		}
+		} catch (error) { Swal.fire('Error', 'No se pudo eliminar.', 'error'); }
 	}
 
 	async function editPetStatus(pet) {
 		const { value: formValues } = await Swal.fire({
-			title: 'Editar Estado de Mascota',
+			title: 'Editar Mascota',
 			html: `
-				<label for="swal-status" class="form-label">Estado:</label>
-				<select id="swal-status" class="form-select">
-					<option value="AVAILABLE" ${pet.status === 'AVAILABLE' ? 'selected' : ''}>Disponible</option>
-					<option value="ADOPTED" ${pet.status === 'ADOPTED' ? 'selected' : ''}>Adoptado</option>
-					<option value="RESERVED" ${pet.status === 'RESERVED' ? 'selected' : ''}>Reservado</option>
-					<option value="UNAVAILABLE" ${pet.status === 'UNAVAILABLE' ? 'selected' : ''}>No disponible</option>
-				</select>
-				
-				<label for="swal-name" class="form-label mt-3">Nombre:</label>
-				<input id="swal-name" class="form-control" value="${pet.name}">
+				<div class="text-start">
+					<label class="form-label small fw-bold">Estado:</label>
+					<select id="swal-status" class="form-select mb-3">
+						<option value="PENDING_APPROVAL" ${pet.status === 'PENDING_APPROVAL' ? 'selected' : ''}>🟠 Solicitud Pendiente</option>
+						<option value="AVAILABLE" ${pet.status === 'AVAILABLE' ? 'selected' : ''}>🟢 Disponible / Publicada</option>
+						<option value="ADOPTED" ${pet.status === 'ADOPTED' ? 'selected' : ''}>🔵 Adoptada</option>
+						<option value="REJECTED" ${pet.status === 'REJECTED' ? 'selected' : ''}>🔴 Rechazada</option>
+					</select>
+					
+					<label class="form-label small fw-bold">Nombre:</label>
+					<input id="swal-name" class="form-control" value="${pet.name}">
+				</div>
 			`,
 			focusConfirm: false,
 			showCancelButton: true,
-			confirmButtonText: 'Guardar',
-			cancelButtonText: 'Cancelar',
+			confirmButtonText: 'Guardar Cambios',
 			preConfirm: () => {
 				return {
 					status: document.getElementById('swal-status').value,
@@ -159,36 +218,60 @@
 
 		if (formValues) {
 			try {
-				await updatePet(pet.id, { 
-					status: formValues.status,
-					name: formValues.name 
-				});
-				
-				await Swal.fire('¡Actualizado!', 'La mascota ha sido actualizada.', 'success');
+				await updatePet(pet.id, formValues);
 				await loadPets();
-			} catch (error) {
-				console.error('Error al actualizar mascota:', error);
-				Swal.fire('Error', 'Hubo un problema al actualizar.', 'error');
-			}
+				Swal.fire('¡Listo!', 'Cambios guardados correctamente.', 'success');
+			} catch (error) { Swal.fire('Error', 'No se pudo actualizar.', 'error'); }
 		}
 	}
 </script>
 
 <AdminNavbar />
 
-<section class="container my-4">
-	<div class="d-flex justify-content-between align-items-center mb-4">
-		<h2 class="mb-0">Gestión de Mascotas y Publicaciones</h2>
-		<div class="d-flex align-items-center gap-2">
-			<span class="text-muted small">Ordenar por:</span>
-			<select class="form-select form-select-sm w-auto" bind:value={sortOrder} on:change={renderGrid}>
-				<option value="recent">Más recientes</option>
-				<option value="alphabetical">Nombre (A-Z)</option>
-			</select>
+<main class="admin-pets-page py-5 bg-light min-vh-100">
+	<div class="container" in:fly={{ y: 20, duration: 600 }}>
+		<div class="d-flex flex-column flex-md-row justify-content-between align-items-center mb-4 gap-3">
+			<div>
+				<h1 class="fw-bold h2 mb-1">Mascotas y Publicaciones</h1>
+				<p class="text-muted mb-0">Gestiona las solicitudes de la comunidad y el catálogo público.</p>
+			</div>
+			
+			<div class="d-flex align-items-center gap-2 bg-white p-2 rounded-3 border shadow-sm">
+				<i class="bi bi-sort-alpha-down text-primary ms-2"></i>
+				<select class="form-select form-select-sm border-0 shadow-none w-auto" bind:value={sortOrder} on:change={renderGrid}>
+					<option value="recent">Más recientes</option>
+					<option value="alphabetical">Nombre (A-Z)</option>
+				</select>
+			</div>
+		</div>
+
+		<div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+			<div class="card-body p-0">
+				<div id="pets-table-wrapper"></div>
+			</div>
 		</div>
 	</div>
+</main>
 
-	<div class="card p-3 shadow-sm">
-		<div id="pets-table-wrapper"></div>
-	</div>
-</section>
+<style>
+	:global(.gridjs-container) {
+		border-radius: 0 !important;
+		padding: 0 !important;
+	}
+	:global(.gridjs-wrapper) {
+		border: none !important;
+		box-shadow: none !important;
+	}
+	:global(.gridjs-th) {
+		background-color: #f8f9fa !important;
+		color: #495057 !important;
+		text-transform: uppercase !important;
+		font-size: 0.75rem !important;
+		letter-spacing: 1px !important;
+		padding: 15px !important;
+	}
+	:global(.gridjs-td) {
+		padding: 15px !important;
+		vertical-align: middle !important;
+	}
+</style>

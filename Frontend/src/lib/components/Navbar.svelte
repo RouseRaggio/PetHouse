@@ -111,10 +111,10 @@
 				<li class="nav-item user-menu-item ms-lg-3 mt-3 mt-lg-0 pe-0">
 					{#if user}
 						<div class="dropdown">
-							<button 
-								class="btn profile-trigger d-flex align-items-center gap-2" 
-								type="button" 
-								data-bs-toggle="dropdown" 
+							<button
+								class="btn profile-trigger d-flex align-items-center gap-2"
+								type="button"
+								data-bs-toggle="dropdown"
 								aria-expanded="false"
 							>
 								<div class="avatar-circle">
@@ -129,7 +129,7 @@
 									<div class="fw-bold">{user.name} {user.last_name || ''}</div>
 									<div class="text-muted small">{user.email}</div>
 								</li>
-								
+
 								{#if user.role_id === 1}
 									<li>
 										<a class="dropdown-item cartoon-dropdown-item py-2" href="/admin">
@@ -137,18 +137,19 @@
 										</a>
 									</li>
 								{/if}
-								
+
 								<li>
-									<button class="dropdown-item cartoon-dropdown-item py-2 text-danger" on:click={logout}>
+									<button
+										class="dropdown-item cartoon-dropdown-item py-2 text-danger"
+										on:click={logout}
+									>
 										<i class="bi bi-box-arrow-right me-2"></i> Cerrar Sesión
 									</button>
 								</li>
 							</ul>
 						</div>
 					{:else if showLogin}
-						<a href="/login" class="btn btn-login-cartoon px-4">
-							¡Entrar! 🐶
-						</a>
+						<a href="/login" class="btn btn-login-cartoon px-4"> ¡Entrar! 🐶 </a>
 					{/if}
 				</li>
 			</ul>
@@ -173,22 +174,35 @@
 	}
 
 	@keyframes wiggle {
-		0%, 100% { transform: rotate(0deg); }
-		25% { transform: rotate(-5deg); }
-		75% { transform: rotate(5deg); }
+		0%,
+		100% {
+			transform: rotate(0deg);
+		}
+		25% {
+			transform: rotate(-5deg);
+		}
+		75% {
+			transform: rotate(5deg);
+		}
 	}
 
 	/* Toggler hamburger cartoon */
 	.cartoon-toggler {
+		display: none;
 		border: 2.5px solid var(--ink);
 		border-radius: 12px;
 		padding: 6px 10px;
 		background: var(--mustard);
 		box-shadow: 3px 3px 0 var(--ink);
-		display: flex;
-		flex-direction: column;
-		gap: 4px;
 		transition: all 0.3s ease;
+	}
+
+	@media (max-width: 991.98px) {
+		.cartoon-toggler {
+			display: flex;
+			flex-direction: column;
+			gap: 4px;
+		}
 	}
 
 	.cartoon-toggler:hover {
@@ -304,8 +318,8 @@
 	}
 
 	.cartoon-dropdown-item.text-danger:hover {
-		background-color: #FFCDD2 !important;
-		color: #B71C1C !important;
+		background-color: #ffcdd2 !important;
+		color: #b71c1c !important;
 	}
 
 	/* Botón login cartoon */

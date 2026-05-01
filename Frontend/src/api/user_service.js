@@ -49,11 +49,11 @@ export async function loginUser(email, password) {
 			'Content-Type': 'application/json'
 		},
 		body: JSON.stringify({ email, password })
-		
 	});
 
 	if (!response.ok) {
-		throw new Error('Credenciales incorrectas');
+		const errorData = await response.json().catch(() => ({}));
+		throw new Error(errorData.detail || errorData.message || 'Credenciales incorrectas');
 	}
 
 	return await response.json();

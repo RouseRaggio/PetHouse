@@ -59,8 +59,8 @@ def create(
 
 # GET ALL
 @router.get("", response_model=List[PetResponse])
-def read_all(db: Session = Depends(get_db)):
-    return get_pets(db)
+def read_all(status: Optional[str] = None, db: Session = Depends(get_db)):
+    return get_pets(db, status=status)
 
 
 # GET ONE

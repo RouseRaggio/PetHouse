@@ -13,7 +13,7 @@
 
 	onMount(async () => {
 		try {
-			const res = await fetch('http://localhost:8000/pets');
+			const res = await fetch('http://localhost:8000/pets?status=AVAILABLE');
 			if (res.ok) {
 				pets = await res.json();
 			}

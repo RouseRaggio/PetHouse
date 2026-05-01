@@ -1,4 +1,4 @@
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from fastapi import HTTPException, UploadFile
 from datetime import datetime
 import base64
@@ -8,6 +8,7 @@ from app.models.adoption_model import Adoption
 from app.models.user_model import User
 from app.schemas.pet_schema import PetCreate, PetUpdate
 from app.core.email import send_gps_email
+from app.controllers.audit_log_controller import log_action
 
 
 # =========================
@@ -22,6 +23,13 @@ def _upload_file_to_data_uri(file: UploadFile):
 
 
 def create_pet(db: Session, pet: PetCreate, user_id: int, image: UploadFile = None):
+    # Obtener el usuario para verificar su rol
+    user = db.query(User).filter(User.id == user_id).first()
+    
+    # Si es admin (role_id == 1), se publica directamente como AVAILABLE
+    # De lo contrario, queda como PENDING_APPROVAL
+    initial_status = "AVAILABLE" if user and user.role_id == 1 else "PENDING_APPROVAL"
+
     image_url = None
     image_data = None
     if image:
@@ -37,13 +45,36 @@ def create_pet(db: Session, pet: PetCreate, user_id: int, image: UploadFile = No
         description=pet.description,
         image_url=image_url,
         image_data=image_data,
-        status="AVAILABLE"
+        status=initial_status
     )
 
     db.add(new_pet)
     db.commit()
     db.refresh(new_pet)
+    
+    # Inicializar campos virtuales para el schema
     new_pet.adopter_name = None
+    new_pet.adopter_id = None
+    new_pet.publisher_name = f"{user.name} {user.last_name or ''}" if user else "Sistema"
+
+    try:
+        log_action(
+            db=db,
+            user_id=user_id,
+            action="create",
+            resource="pet",
+            resource_id=new_pet.id,
+            changes={
+                "name": new_pet.name,
+                "species": new_pet.species,
+                "race": new_pet.race,
+                "status": new_pet.status
+            },
+            status="success"
+        )
+    except Exception as e:
+        print(f"Audit logging error: {e}")
+
     return new_pet
 
 
@@ -51,23 +82,34 @@ def create_pet(db: Session, pet: PetCreate, user_id: int, image: UploadFile = No
 # GET ALL
 # =========================
 
-def get_pets(db: Session):
+def get_pets(db: Session, status: str = None):
+    # Usar joinedload para evitar N+1 y errores de lazy load
+    query = db.query(Pet).options(joinedload(Pet.publisher)).filter(Pet.deleted_at == None)
+    
+    if status:
+        query = query.filter(Pet.status == status)
 
-    pets = db.query(Pet).filter(
-        Pet.deleted_at == None
-    ).all()
+    pets = query.all()
 
     for pet in pets:
-        adoption = db.query(Adoption).filter(
+        # Adopter name - buscar la adopción activa más reciente
+        adoption = db.query(Adoption).options(joinedload(Adoption.adoptante)).filter(
             Adoption.pet_id == pet.id,
             Adoption.deleted_at == None
         ).order_by(Adoption.fecha_solicitud.desc()).first()
+        
         if adoption and adoption.adoptante:
             pet.adopter_name = f"{adoption.adoptante.name} {adoption.adoptante.last_name}"
             pet.adopter_id = adoption.adoptante.id
         else:
             pet.adopter_name = None
             pet.adopter_id = None
+            
+        # Publisher name
+        if pet.publisher:
+            pet.publisher_name = f"{pet.publisher.name} {pet.publisher.last_name or ''}"
+        else:
+            pet.publisher_name = "Anónimo"
     
     return pets
 
@@ -78,7 +120,7 @@ def get_pets(db: Session):
 
 def get_pet(db: Session, pet_id: int):
 
-    pet = db.query(Pet).filter(
+    pet = db.query(Pet).options(joinedload(Pet.publisher)).filter(
         Pet.id == pet_id,
         Pet.deleted_at == None
     ).first()
@@ -86,16 +128,24 @@ def get_pet(db: Session, pet_id: int):
     if not pet:
         raise HTTPException(404, "Mascota no encontrada")
 
-    adoption = db.query(Adoption).filter(
+    # Adopter name
+    adoption = db.query(Adoption).options(joinedload(Adoption.adoptante)).filter(
         Adoption.pet_id == pet.id,
         Adoption.deleted_at == None
     ).order_by(Adoption.fecha_solicitud.desc()).first()
+    
     if adoption and adoption.adoptante:
         pet.adopter_name = f"{adoption.adoptante.name} {adoption.adoptante.last_name}"
         pet.adopter_id = adoption.adoptante.id
     else:
         pet.adopter_name = None
         pet.adopter_id = None
+
+    # Publisher name
+    if pet.publisher:
+        pet.publisher_name = f"{pet.publisher.name} {pet.publisher.last_name or ''}"
+    else:
+        pet.publisher_name = "Anónimo"
 
     return pet
 
@@ -148,6 +198,19 @@ def update_pet(db: Session, pet_id: int, data: PetUpdate):
     db.commit()
     db.refresh(pet)
 
+    try:
+        log_action(
+            db=db,
+            user_id=None,
+            action="update",
+            resource="pet",
+            resource_id=pet.id,
+            changes=update_data,
+            status="success"
+        )
+    except Exception as e:
+        print(f"Audit logging error: {e}")
+
     return pet
 
 
@@ -167,5 +230,18 @@ def delete_pet(db: Session, pet_id: int):
 
     pet.deleted_at = datetime.utcnow()
     db.commit()
+
+    try:
+        log_action(
+            db=db,
+            user_id=None,
+            action="delete",
+            resource="pet",
+            resource_id=pet.id,
+            details=f"Mascota {pet.name} eliminada",
+            status="success"
+        )
+    except Exception as e:
+        print(f"Audit logging error: {e}")
 
     return {"message": "Mascota eliminada lógicamente"}
