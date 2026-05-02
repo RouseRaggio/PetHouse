@@ -35,7 +35,7 @@
 				limit: pageSize,
 				offset: (currentPage - 1) * pageSize
 			};
-			
+
 			if (filterAction) params.action = filterAction;
 			if (filterResource) params.resource = filterResource;
 			if (filterUser) params.user_id = filterUser;
@@ -43,7 +43,7 @@
 			if (endDate) params.end_date = new Date(endDate).toISOString();
 
 			const response = await getAuditLogs(params);
-			auditLogs = Array.isArray(response) ? response : (response.data || []);
+			auditLogs = Array.isArray(response) ? response : response.data || [];
 			applySearch();
 		} catch (error) {
 			console.error('Error fetching audit logs:', error);
@@ -149,13 +149,15 @@
 
 <main class="history-page py-5">
 	<div class="container" in:fade>
-		<header class="d-flex flex-column flex-md-row justify-content-between align-items-end mb-4 gap-3">
+		<header
+			class="d-flex flex-column flex-md-row justify-content-between align-items-end mb-4 gap-3"
+		>
 			<div in:fly={{ x: -20, duration: 600 }}>
 				<span class="history-badge mb-2">📋 Auditoría General</span>
 				<h1 class="fw-bold display-6 mb-0">Historial de Actividad</h1>
 				<p class="text-muted">Monitorea cada cambio y acción realizada en el sistema.</p>
 			</div>
-			
+
 			<div class="d-flex gap-2">
 				<button class="btn btn-export shadow-sm" on:click={exportToCSV}>
 					<i class="bi bi-download me-2"></i> Exportar CSV
@@ -206,9 +208,9 @@
 
 		<!-- Búsqueda rápida -->
 		<div class="search-box mb-4" in:fly={{ y: 20, duration: 600, delay: 200 }}>
-			<input 
-				type="text" 
-				class="form-control form-control-lg cartoon-input ps-4" 
+			<input
+				type="text"
+				class="form-control form-control-lg cartoon-input ps-4"
 				placeholder="🔍 Buscar por detalles, recurso o usuario..."
 				bind:value={searchTerm}
 				on:input={applySearch}
@@ -216,7 +218,10 @@
 		</div>
 
 		<!-- Tabla Premium -->
-		<div class="card border-0 shadow-sm rounded-4 overflow-hidden" in:fly={{ y: 20, duration: 600, delay: 300 }}>
+		<div
+			class="card border-0 shadow-sm rounded-4 overflow-hidden"
+			in:fly={{ y: 20, duration: 600, delay: 300 }}
+		>
 			<div class="table-responsive">
 				<table class="table table-hover align-middle mb-0">
 					<thead class="table-ink text-white">
@@ -253,15 +258,17 @@
 												{log.user_id ? 'U' : 'S'}
 											</div>
 											<div>
-												<div class="fw-bold small">{log.user_id ? `Usuario #${log.user_id}` : 'Sistema'}</div>
+												<div class="fw-bold small">
+													{log.user_id ? `Usuario #${log.user_id}` : 'Sistema'}
+												</div>
 												<div class="text-muted x-small">{log.ip_address || 'Sin IP'}</div>
 											</div>
 										</div>
 									</td>
 									<td>
-										{#const badge = getActionBadge(log.action)}
-										<span class="badge-cartoon {badge.class}">
-											<i class="bi {badge.icon} me-1"></i> {badge.label}
+										<span class="badge-cartoon {getActionBadge(log.action).class}">
+											<i class="bi {getActionBadge(log.action).icon} me-1"></i>
+											{getActionBadge(log.action).label}
 										</span>
 									</td>
 									<td>
@@ -271,9 +278,13 @@
 									<td class="text-muted small">{formatDate(log.timestamp)}</td>
 									<td>
 										{#if log.status === 'success'}
-											<span class="text-success small fw-bold"><i class="bi bi-check-circle-fill"></i> Ok</span>
+											<span class="text-success small fw-bold"
+												><i class="bi bi-check-circle-fill"></i> Ok</span
+											>
 										{:else}
-											<span class="text-danger small fw-bold"><i class="bi bi-x-circle-fill"></i> Error</span>
+											<span class="text-danger small fw-bold"
+												><i class="bi bi-x-circle-fill"></i> Error</span
+											>
 										{/if}
 									</td>
 									<td class="text-center pe-4">
@@ -298,14 +309,19 @@
 			<div class="modal-content cartoon-modal">
 				<div class="modal-header border-0 pb-0">
 					<h5 class="fw-bold mb-0">Detalle del Registro #{selectedLog.id}</h5>
-					<button type="button" class="btn-close" on:click={() => (showDetailModal = false)}></button>
+					<button type="button" class="btn-close" on:click={() => (showDetailModal = false)}
+					></button>
 				</div>
 				<div class="modal-body">
 					<div class="row g-4">
 						<div class="col-md-6">
 							<div class="detail-item p-3 rounded-4">
 								<label class="x-small text-muted text-uppercase fw-bold">Actor</label>
-								<div class="fw-bold">{selectedLog.user_id ? `Usuario ID #${selectedLog.user_id}` : 'Proceso del Sistema'}</div>
+								<div class="fw-bold">
+									{selectedLog.user_id
+										? `Usuario ID #${selectedLog.user_id}`
+										: 'Proceso del Sistema'}
+								</div>
 							</div>
 						</div>
 						<div class="col-md-6">
@@ -317,13 +333,21 @@
 						<div class="col-12">
 							<div class="detail-item p-3 rounded-4">
 								<label class="x-small text-muted text-uppercase fw-bold">Cambios / Datos</label>
-								<pre class="changes-pre mt-2">{JSON.stringify(selectedLog.changes || selectedLog.details, null, 2)}</pre>
+								<pre class="changes-pre mt-2">{JSON.stringify(
+										selectedLog.changes || selectedLog.details,
+										null,
+										2
+									)}</pre>
 							</div>
 						</div>
 					</div>
 				</div>
 				<div class="modal-footer border-0">
-					<button type="button" class="btn btn-ink text-white px-4 rounded-pill" on:click={() => (showDetailModal = false)}>Cerrar</button>
+					<button
+						type="button"
+						class="btn btn-ink text-white px-4 rounded-pill"
+						on:click={() => (showDetailModal = false)}>Cerrar</button
+					>
 				</div>
 			</div>
 		</div>
@@ -440,11 +464,26 @@
 		align-items: center;
 	}
 
-	.badge-create { background: #c8e6c9; color: #2e7d32; }
-	.badge-update { background: #bbdefb; color: #1565c0; }
-	.badge-delete { background: #ffcdd2; color: #c62828; }
-	.badge-login { background: #e1bee7; color: #6a1b9a; }
-	.badge-failed { background: #fff9c4; color: #f9a825; }
+	.badge-create {
+		background: #c8e6c9;
+		color: #2e7d32;
+	}
+	.badge-update {
+		background: #bbdefb;
+		color: #1565c0;
+	}
+	.badge-delete {
+		background: #ffcdd2;
+		color: #c62828;
+	}
+	.badge-login {
+		background: #e1bee7;
+		color: #6a1b9a;
+	}
+	.badge-failed {
+		background: #fff9c4;
+		color: #f9a825;
+	}
 
 	.btn-detail-circle {
 		width: 35px;
@@ -489,6 +528,10 @@
 		color: white;
 	}
 
-	.x-small { font-size: 0.7rem; }
-	.opacity-20 { opacity: 0.2; }
+	.x-small {
+		font-size: 0.7rem;
+	}
+	.opacity-20 {
+		opacity: 0.2;
+	}
 </style>

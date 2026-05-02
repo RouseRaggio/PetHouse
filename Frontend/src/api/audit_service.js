@@ -1,57 +1,71 @@
-import API_URL, { getAuthHeaders } from './api';
+import API_URL, { getAuthHeaders } from './api.js';
 
-export const getAuditLogs = async ({ user_id, action, resource, start_date, end_date, limit = 20, offset = 0 } = {}) => {
-  try {
-    const params = new URLSearchParams();
+/**
+ * Simula auditoría usando endpoints reales del backend
+ * ya que no existe /audit-logs en el backend actual.
+ */
+export async function getAuditLogs(params = {}) {
+	try {
+		const headers = getAuthHeaders();
 
-    if (user_id) params.append('user_id', user_id);
-    if (action) params.append('action', action);
-    if (resource) params.append('resource', resource);
-    if (start_date) params.append('start_date', start_date);
-    if (end_date) params.append('end_date', end_date);
-    params.append('limit', limit);
-    params.append('offset', offset);
+		const [adoptionsRes, usersRes] = await Promise.all([
+			fetch(`${API_URL}/adoptions/`, { headers }),
+			fetch(`${API_URL}/users/`, { headers })
+		]);
 
-    const response = await fetch(`${API_URL}/audit-logs?${params.toString()}`, {
-      credentials: 'include',
-      headers: getAuthHeaders()
-    });
+		const adoptions = adoptionsRes.ok ? await adoptionsRes.json() : [];
+		const users = usersRes.ok ? await usersRes.json() : [];
 
-    if (!response.ok) {
-      const error = await response.json().catch(() => ({}));
-      throw new Error(error.detail || error.message || 'Error al obtener el historial de auditoría');
-    }
+		// Convertir adopciones en registros de auditoría
+		let logs = adoptions.map((a) => ({
+			id: a.id,
+			user_id: a.adoptante_id,
+			action: a.status_id === 1 ? 'create' : 'update',
+			resource: 'adoption',
+			resource_id: a.id,
+			details: `Solicitud de adopción mascota #${a.pet_id}`,
+			changes: a,
+			timestamp: a.fecha_solicitud,
+			status: 'success',
+			ip_address: null
+		}));
 
-    return await response.json();
-  } catch (error) {
-    console.error('getAuditLogs:', error);
-    throw error;
-  }
-};
+		// Aplicar filtros
+		if (params.action)     logs = logs.filter((l) => l.action === params.action);
+		if (params.resource)   logs = logs.filter((l) => l.resource === params.resource);
+		if (params.user_id)    logs = logs.filter((l) => l.user_id === Number(params.user_id));
+		if (params.start_date) logs = logs.filter((l) => new Date(l.timestamp) >= new Date(params.start_date));
+		if (params.end_date)   logs = logs.filter((l) => new Date(l.timestamp) <= new Date(params.end_date));
 
-export const exportAuditLogsCSV = async ({ user_id, action, resource, start_date, end_date } = {}) => {
-  try {
-    const params = new URLSearchParams();
+		// Paginación
+		const offset = params.offset || 0;
+		const limit  = params.limit  || 20;
+		return logs.slice(offset, offset + limit);
 
-    if (user_id) params.append('user_id', user_id);
-    if (action) params.append('action', action);
-    if (resource) params.append('resource', resource);
-    if (start_date) params.append('start_date', start_date);
-    if (end_date) params.append('end_date', end_date);
+	} catch (error) {
+		console.error('getAuditLogs:', error);
+		return [];
+	}
+}
 
-    const response = await fetch(`${API_URL}/audit-logs/export/csv?${params.toString()}`, {
-      credentials: 'include',
-      headers: getAuthHeaders()
-    });
+export async function exportAuditLogsCSV(params = {}) {
+	const logs = await getAuditLogs(params);
 
-    if (!response.ok) {
-      const error = await response.json().catch(() => ({}));
-      throw new Error(error.detail || error.message || 'Error al exportar el historial');
-    }
+	const headers = ['ID', 'Usuario', 'Acción', 'Recurso', 'Recurso ID', 'Fecha', 'Estado'];
+	const rows = logs.map((l) => [
+		l.id,
+		l.user_id ? `Usuario #${l.user_id}` : 'Sistema',
+		l.action,
+		l.resource,
+		l.resource_id || '-',
+		l.timestamp ? new Date(l.timestamp).toLocaleString('es-CO') : '-',
+		l.status
+	]);
 
-    return await response.json();
-  } catch (error) {
-    console.error('exportAuditLogsCSV:', error);
-    throw error;
-  }
-};
+	const csv = [headers, ...rows].map((r) => r.join(',')).join('\n');
+
+	return {
+		content: csv,
+		filename: `auditoria_${new Date().toISOString().slice(0, 10)}.csv`
+	};
+}
