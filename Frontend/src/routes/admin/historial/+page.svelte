@@ -1,15 +1,19 @@
+
 <script>
 	import { onMount, tick } from 'svelte';
 	import Swal from 'sweetalert2';
 	import { fly, fade } from 'svelte/transition';
 	import AdminNavbar from '$lib/components/AdminNavbar.svelte';
-	import { getAuditLogs, exportAuditLogsCSV } from '../../../api/audit_service.js';
+	import { PUBLIC_API_URL } from '$env/static/public';
+
+	export let data; // Recibir datos del server load
 
 	let auditLogs = [];
 	let filteredLogs = [];
 	let loading = false;
 	let showDetailModal = false;
 	let selectedLog = null;
+	let users = [];
 
 	// Filters
 	let filterAction = '';
@@ -25,25 +29,44 @@
 	let pageSizeOptions = [20, 50, 100];
 
 	onMount(async () => {
-		await fetchAuditLogs();
+		// Usar datos del server si están disponibles
+		if (data?.historial && Array.isArray(data.historial)) {
+			auditLogs = data.historial;
+			users = data.users || [];
+			applySearch();
+		} else {
+			await fetchAuditLogs();
+		}
 	});
 
 	async function fetchAuditLogs() {
 		loading = true;
 		try {
-			const params = {
-				limit: pageSize,
-				offset: (currentPage - 1) * pageSize
+			const token = localStorage.getItem('token');
+			const headers = {
+				'Content-Type': 'application/json',
+				...(token ? { 'Authorization': `Bearer ${token}` } : {})
 			};
 
-			if (filterAction) params.action = filterAction;
-			if (filterResource) params.resource = filterResource;
-			if (filterUser) params.user_id = filterUser;
-			if (startDate) params.start_date = new Date(startDate).toISOString();
-			if (endDate) params.end_date = new Date(endDate).toISOString();
+			const apiUrl = PUBLIC_API_URL || 'http://localhost:8000';
+			const params = new URLSearchParams({
+				limit: pageSize,
+				offset: (currentPage - 1) * pageSize
+			});
 
-			const response = await getAuditLogs(params);
-			auditLogs = Array.isArray(response) ? response : response.data || [];
+			if (filterAction) params.append('action', filterAction);
+			if (filterResource) params.append('resource', filterResource);
+			if (filterUser) params.append('user_id', filterUser);
+			if (startDate) params.append('start_date', new Date(startDate).toISOString());
+			if (endDate) params.append('end_date', new Date(endDate).toISOString());
+
+			const response = await fetch(`${apiUrl}/audit-logs/?${params}`, { headers });
+			
+			if (!response.ok) {
+				throw new Error('Error al cargar el historial');
+			}
+
+			auditLogs = await response.json();
 			applySearch();
 		} catch (error) {
 			console.error('Error fetching audit logs:', error);
@@ -67,27 +90,41 @@
 				(log) =>
 					log.action.toLowerCase().includes(term) ||
 					log.resource.toLowerCase().includes(term) ||
-					(log.details && log.details.toLowerCase().includes(term))
+					(log.details && log.details.toLowerCase().includes(term)) ||
+					(getUserName(log.user_id) && getUserName(log.user_id).toLowerCase().includes(term))
 			);
 		}
 	}
 
 	async function exportToCSV() {
 		try {
-			const params = {};
-			if (filterAction) params.action = filterAction;
-			if (filterResource) params.resource = filterResource;
-			if (filterUser) params.user_id = filterUser;
-			if (startDate) params.start_date = new Date(startDate).toISOString();
-			if (endDate) params.end_date = new Date(endDate).toISOString();
+			const token = localStorage.getItem('token');
+			const headers = {
+				'Content-Type': 'application/json',
+				...(token ? { 'Authorization': `Bearer ${token}` } : {})
+			};
 
-			const data = await exportAuditLogsCSV(params);
+			const apiUrl = PUBLIC_API_URL || 'http://localhost:8000';
+			const params = new URLSearchParams();
 
-			const blob = new Blob([data.content], { type: 'text/csv;charset=utf-8;' });
+			if (filterAction) params.append('action', filterAction);
+			if (filterResource) params.append('resource', filterResource);
+			if (filterUser) params.append('user_id', filterUser);
+			if (startDate) params.append('start_date', new Date(startDate).toISOString());
+			if (endDate) params.append('end_date', new Date(endDate).toISOString());
+
+			const response = await fetch(`${apiUrl}/audit-logs/export/csv?${params}`, { headers });
+			
+			if (!response.ok) {
+				throw new Error('Error al exportar');
+			}
+
+			const csv = await response.text();
+			const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
 			const url = URL.createObjectURL(blob);
 			const element = document.createElement('a');
 			element.setAttribute('href', url);
-			element.setAttribute('download', data.filename);
+			element.setAttribute('download', `auditoria_${new Date().toISOString().slice(0, 10)}.csv`);
 			element.style.display = 'none';
 			document.body.appendChild(element);
 			element.click();
@@ -129,8 +166,15 @@
 			month: '2-digit',
 			year: 'numeric',
 			hour: '2-digit',
-			minute: '2-digit'
+			minute: '2-digit',
+			second: '2-digit'
 		});
+	}
+
+	function getUserName(userId) {
+		if (!userId) return 'Sistema';
+		const user = users.find(u => u.id === userId);
+		return user ? user.nombre || user.email || `Usuario #${userId}` : `Usuario #${userId}`;
 	}
 
 	function getActionBadge(action) {
@@ -142,6 +186,36 @@
 			login_failed: { class: 'badge-failed', label: 'Fallo', icon: 'bi-exclamation-triangle' }
 		};
 		return config[action] || { class: 'bg-secondary', label: action, icon: 'bi-dot' };
+	}
+
+	function getResourceLabel(resource) {
+		const labels = {
+			user: 'Usuario',
+			pet: 'Mascota',
+			adoption: 'Adopción',
+			tracker: 'Rastreador',
+			role: 'Rol',
+			permission: 'Permiso'
+		};
+		return labels[resource] || resource;
+	}
+
+	function getDetailDescription(log) {
+		const userName = getUserName(log.user_id);
+		const resourceLabel = getResourceLabel(log.resource);
+		const actionLabel = getActionBadge(log.action).label;
+
+		if (log.details) {
+			return log.details;
+		}
+
+		if (log.action === 'login') {
+			return `${userName} inició sesión`;
+		} else if (log.action === 'login_failed') {
+			return `Intento fallido de inicio de sesión desde ${log.ip_address || 'desconocido'}`;
+		} else {
+			return `${userName} ${actionLabel.toLowerCase()} ${resourceLabel.toLowerCase()} #${log.resource_id || 'N/A'}`;
+		}
 	}
 </script>
 
@@ -168,7 +242,16 @@
 		<!-- Filtros Premium -->
 		<div class="card filter-card mb-4 p-4 shadow-sm" in:fly={{ y: 20, duration: 600, delay: 100 }}>
 			<div class="row g-3">
-				<div class="col-md-3">
+				<div class="col-md-2">
+					<label class="cartoon-label">Usuario</label>
+					<select class="form-select cartoon-input" bind:value={filterUser}>
+						<option value="">Todos los usuarios</option>
+						{#each users as user}
+							<option value={user.id}>{user.nombre || user.email}</option>
+						{/each}
+					</select>
+				</div>
+				<div class="col-md-2">
 					<label class="cartoon-label">Acción</label>
 					<select class="form-select cartoon-input" bind:value={filterAction}>
 						<option value="">Todas las acciones</option>
@@ -178,7 +261,7 @@
 						<option value="login">Inicio Sesión</option>
 					</select>
 				</div>
-				<div class="col-md-3">
+				<div class="col-md-2">
 					<label class="cartoon-label">Recurso</label>
 					<select class="form-select cartoon-input" bind:value={filterResource}>
 						<option value="">Todos los recursos</option>
@@ -187,7 +270,7 @@
 						<option value="adoption">Adopciones</option>
 					</select>
 				</div>
-				<div class="col-md-4">
+				<div class="col-md-3">
 					<label class="cartoon-label">Rango de Fechas</label>
 					<div class="input-group">
 						<input type="date" class="form-control cartoon-input" bind:value={startDate} />
@@ -195,7 +278,7 @@
 						<input type="date" class="form-control cartoon-input" bind:value={endDate} />
 					</div>
 				</div>
-				<div class="col-md-2 d-flex align-items-end gap-2">
+				<div class="col-md-3 d-flex align-items-end gap-2">
 					<button class="btn btn-search w-100" on:click={fetchAuditLogs}>
 						<i class="bi bi-search"></i>
 					</button>
@@ -219,7 +302,7 @@
 
 		<!-- Tabla Premium -->
 		<div
-			class="card border-0 shadow-sm rounded-4 overflow-hidden"
+			class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4"
 			in:fly={{ y: 20, duration: 600, delay: 300 }}
 		>
 			<div class="table-responsive">
@@ -246,7 +329,10 @@
 							<tr>
 								<td colspan="6" class="text-center py-5 text-muted">
 									<i class="bi bi-journal-x display-4 d-block mb-3 opacity-20"></i>
-									No se encontraron registros con esos filtros.
+									<p class="fw-bold">No se encontraron registros con esos filtros.</p>
+									<button class="btn btn-sm btn-outline-primary" on:click={resetFilters}>
+										<i class="bi bi-arrow-counterclockwise"></i> Limpiar filtros
+									</button>
 								</td>
 							</tr>
 						{:else}
@@ -255,11 +341,11 @@
 									<td class="ps-4">
 										<div class="d-flex align-items-center gap-2">
 											<div class="user-avatar-small">
-												{log.user_id ? 'U' : 'S'}
+												{log.user_id ? '👤' : '⚙️'}
 											</div>
 											<div>
 												<div class="fw-bold small">
-													{log.user_id ? `Usuario #${log.user_id}` : 'Sistema'}
+													{getUserName(log.user_id)}
 												</div>
 												<div class="text-muted x-small">{log.ip_address || 'Sin IP'}</div>
 											</div>
@@ -272,7 +358,7 @@
 										</span>
 									</td>
 									<td>
-										<span class="fw-bold text-dark">{log.resource}</span>
+										<span class="fw-bold text-dark">{getResourceLabel(log.resource)}</span>
 										<span class="text-muted small">#{log.resource_id || '-'}</span>
 									</td>
 									<td class="text-muted small">{formatDate(log.timestamp)}</td>
@@ -288,7 +374,7 @@
 										{/if}
 									</td>
 									<td class="text-center pe-4">
-										<button class="btn btn-detail-circle" on:click={() => viewDetails(log)}>
+										<button class="btn btn-detail-circle" on:click={() => viewDetails(log)} title="Ver detalles">
 											<i class="bi bi-eye"></i>
 										</button>
 									</td>
@@ -299,6 +385,49 @@
 				</table>
 			</div>
 		</div>
+
+		<!-- Paginación -->
+		{#if filteredLogs.length > 0}
+			<div class="card border-0 shadow-sm rounded-4 p-4 pagination-card" in:fly={{ y: 20, duration: 600, delay: 400 }}>
+				<div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+					<div class="d-flex align-items-center gap-2">
+						<span class="text-muted">Registros por página:</span>
+						<select class="form-select form-select-sm cartoon-input" bind:value={pageSize} on:change={fetchAuditLogs} style="width: 80px;">
+							{#each pageSizeOptions as size}
+								<option value={size}>{size}</option>
+							{/each}
+						</select>
+					</div>
+
+					<div class="text-center">
+						<span class="fw-bold text-ink">Página {currentPage}</span>
+					</div>
+
+					<div class="d-flex gap-2">
+						<button
+							class="btn btn-outline-ink rounded-pill"
+							disabled={currentPage === 1}
+							on:click={() => {
+								currentPage = Math.max(1, currentPage - 1);
+								fetchAuditLogs();
+							}}
+						>
+							<i class="bi bi-chevron-left"></i> Anterior
+						</button>
+						<button
+							class="btn btn-outline-ink rounded-pill"
+							disabled={filteredLogs.length < pageSize}
+							on:click={() => {
+								currentPage = currentPage + 1;
+								fetchAuditLogs();
+							}}
+						>
+							Siguiente <i class="bi bi-chevron-right"></i>
+						</button>
+					</div>
+				</div>
+			</div>
+		{/if}
 	</div>
 </main>
 
@@ -314,32 +443,106 @@
 				</div>
 				<div class="modal-body">
 					<div class="row g-4">
-						<div class="col-md-6">
-							<div class="detail-item p-3 rounded-4">
-								<label class="x-small text-muted text-uppercase fw-bold">Actor</label>
-								<div class="fw-bold">
-									{selectedLog.user_id
-										? `Usuario ID #${selectedLog.user_id}`
-										: 'Proceso del Sistema'}
-								</div>
+						<!-- Descripción general de la acción -->
+						<div class="col-12">
+							<div class="detail-item p-3 rounded-4 bg-light">
+								<label class="x-small text-muted text-uppercase fw-bold d-block mb-2">📝 Descripción</label>
+								<div class="fw-bold fs-5">{getDetailDescription(selectedLog)}</div>
 							</div>
 						</div>
+
+						<!-- Usuario que realizó la acción -->
 						<div class="col-md-6">
 							<div class="detail-item p-3 rounded-4">
-								<label class="x-small text-muted text-uppercase fw-bold">Fecha Exacta</label>
+								<label class="x-small text-muted text-uppercase fw-bold">👤 Actor</label>
+								<div class="fw-bold">
+									{getUserName(selectedLog.user_id)}
+								</div>
+								{#if selectedLog.user_id}
+									<div class="text-muted small">ID: {selectedLog.user_id}</div>
+								{:else}
+									<div class="text-muted small">Proceso automático</div>
+								{/if}
+							</div>
+						</div>
+
+						<!-- Fecha y hora exacta -->
+						<div class="col-md-6">
+							<div class="detail-item p-3 rounded-4">
+								<label class="x-small text-muted text-uppercase fw-bold">🕐 Fecha y Hora</label>
 								<div class="fw-bold">{formatDate(selectedLog.timestamp)}</div>
 							</div>
 						</div>
-						<div class="col-12">
+
+						<!-- Acción realizada -->
+						<div class="col-md-4">
 							<div class="detail-item p-3 rounded-4">
-								<label class="x-small text-muted text-uppercase fw-bold">Cambios / Datos</label>
-								<pre class="changes-pre mt-2">{JSON.stringify(
-										selectedLog.changes || selectedLog.details,
+								<label class="x-small text-muted text-uppercase fw-bold">⚡ Acción</label>
+								<span class="badge-cartoon {getActionBadge(selectedLog.action).class}">
+									<i class="bi {getActionBadge(selectedLog.action).icon}"></i>
+									{getActionBadge(selectedLog.action).label}
+								</span>
+							</div>
+						</div>
+
+						<!-- Recurso afectado -->
+						<div class="col-md-4">
+							<div class="detail-item p-3 rounded-4">
+								<label class="x-small text-muted text-uppercase fw-bold">🎯 Recurso</label>
+								<div class="fw-bold">{getResourceLabel(selectedLog.resource)}</div>
+								<div class="text-muted small">ID: {selectedLog.resource_id || '-'}</div>
+							</div>
+						</div>
+
+						<!-- Estado de la operación -->
+						<div class="col-md-4">
+							<div class="detail-item p-3 rounded-4">
+								<label class="x-small text-muted text-uppercase fw-bold">✓ Estado</label>
+								{#if selectedLog.status === 'success'}
+									<span class="text-success fw-bold">
+										<i class="bi bi-check-circle-fill"></i> Exitosa
+									</span>
+								{:else}
+									<span class="text-danger fw-bold">
+										<i class="bi bi-x-circle-fill"></i> Fallida
+									</span>
+								{/if}
+							</div>
+						</div>
+
+						<!-- IP Address si está disponible -->
+						{#if selectedLog.ip_address}
+							<div class="col-12">
+								<div class="detail-item p-3 rounded-4">
+									<label class="x-small text-muted text-uppercase fw-bold">🌐 Dirección IP</label>
+									<div class="fw-bold font-monospace">{selectedLog.ip_address}</div>
+								</div>
+							</div>
+						{/if}
+
+						<!-- Detalles adicionales -->
+						{#if selectedLog.details}
+							<div class="col-12">
+								<div class="detail-item p-3 rounded-4">
+									<label class="x-small text-muted text-uppercase fw-bold">📌 Detalles Adicionales</label>
+									<div class="mt-2">{selectedLog.details}</div>
+								</div>
+							</div>
+						{/if}
+
+						<!-- Cambios realizados (JSON) -->
+						{#if selectedLog.changes}
+							<div class="col-12">
+								<div class="detail-item p-3 rounded-4">
+									<label class="x-small text-muted text-uppercase fw-bold">📊 Cambios (JSON)</label>
+									<pre class="changes-pre mt-2">{JSON.stringify(
+										selectedLog.changes,
 										null,
 										2
 									)}</pre>
+								</div>
 							</div>
-						</div>
+						{/if}
 					</div>
 				</div>
 				<div class="modal-footer border-0">
@@ -533,5 +736,39 @@
 	}
 	.opacity-20 {
 		opacity: 0.2;
+	}
+
+	.pagination-card {
+		border: 3px solid var(--ink);
+		border-radius: 20px;
+		box-shadow: 6px 6px 0 var(--ink);
+	}
+
+	.btn-outline-ink {
+		border: 2.5px solid var(--ink);
+		color: var(--ink);
+		background: white;
+		font-weight: 700;
+		transition: all 0.2s;
+	}
+
+	.btn-outline-ink:hover:not(:disabled) {
+		background: var(--mustard);
+		transform: translateY(-2px);
+		box-shadow: 3px 3px 0 var(--ink);
+	}
+
+	.btn-outline-ink:disabled {
+		opacity: 0.5;
+		cursor: not-allowed;
+	}
+
+	.search-box .cartoon-input {
+		box-shadow: 3px 3px 0 var(--ink);
+	}
+
+	.filter-card .btn:focus {
+		outline: none;
+		box-shadow: 0 0 0 3px rgba(78, 67, 54, 0.25);
 	}
 </style>
