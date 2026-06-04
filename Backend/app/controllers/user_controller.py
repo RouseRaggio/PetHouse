@@ -1,4 +1,5 @@
 from sqlalchemy.orm import Session
+from sqlalchemy.exc import IntegrityError
 from fastapi import HTTPException
 from datetime import datetime
 
@@ -12,7 +13,6 @@ from app.controllers.audit_log_controller import log_action
 import traceback
 import requests
 import secrets
-from app.core.security import hash_password
 
 
 # =========================
@@ -252,8 +252,14 @@ def login_with_google(db: Session, id_token: str):
                 password=hash_password(random_pw)
             )
             db.add(user)
-            db.commit()
-            db.refresh(user)
+            try:
+                db.commit()
+                db.refresh(user)
+            except IntegrityError:
+                db.rollback()
+                user = db.query(User).filter(User.email == email, User.deleted_at == None).first()
+                if not user:
+                    raise HTTPException(500, 'No se pudo crear o recuperar el usuario de Google')
 
             try:
                 log_action(db=db, user_id=None, action='create', resource='user', resource_id=user.id, details='Usuario creado via Google OAuth', status='success')

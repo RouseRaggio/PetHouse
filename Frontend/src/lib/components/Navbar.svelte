@@ -66,7 +66,9 @@
 >
 	<div class="container-fluid px-lg-5">
 		<a class="navbar-brand brand-logo" href="/">
-			<span class="logo-icon">🏠</span>
+			<span class="logo-badge" aria-label="PetHouse logo">
+				<span class="logo-icon">🏡</span>
+			</span>
 			<span class="logo-text">PetHouse</span>
 		</a>
 
@@ -151,14 +153,34 @@
 
 <style>
 	/* Logo cartoon */
+	.brand-logo {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.35rem;
+	}
+
+	.logo-badge {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 2.3rem;
+		height: 2.3rem;
+		border: 2.5px solid var(--ink);
+		border-radius: 14px;
+		background: linear-gradient(135deg, var(--mustard), var(--peach));
+		box-shadow: 3px 3px 0 var(--ink);
+		transform: rotate(-6deg);
+	}
+
 	.logo-icon {
-		font-size: 1.6rem;
-		margin-right: 4px;
+		font-size: 1.1rem;
 		display: inline-block;
 		animation: wiggle 3s ease-in-out infinite;
 	}
 
 	.logo-text {
+		font-size: 1.35rem;
+		letter-spacing: -0.02em;
 		background: linear-gradient(135deg, var(--coral) 0%, var(--mustard) 100%);
 		-webkit-background-clip: text;
 		-webkit-text-fill-color: transparent;

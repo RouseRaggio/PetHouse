@@ -32,7 +32,7 @@
 </script>
 
 <svelte:head>
-	<title>PetHouse - Encuentra tu mejor amigo 🐾</title>
+	<title>PetHouse</title>
 	<meta name="description" content="Adopta una mascota, encuentra tu compañero ideal. PetHouse es la plataforma más cálida para darle hogar a quien más lo necesita." />
 </svelte:head>
 

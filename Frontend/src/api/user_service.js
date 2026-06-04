@@ -10,7 +10,8 @@ export async function getUsers() {
 		throw new Error('Error obteniendo usuarios');
 	}
 
-	return await response.json();
+	const data = await response.json();
+	return Array.isArray(data) ? data : (data.data ?? data.users ?? []);
 }
 
 /* =========================
