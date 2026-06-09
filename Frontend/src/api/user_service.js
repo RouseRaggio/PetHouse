@@ -1,8 +1,5 @@
 import API_URL, { getAuthHeaders } from './api';
 
-/* =========================
-   GET ALL USERS
-========================= */
 export async function getUsers() {
 	const response = await fetch(`${API_URL}/users/`, {
 		cache: 'no-store',
