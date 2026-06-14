@@ -1,0 +1,49 @@
+<div class="modal-overlay" (click)="close()">
+  <div class="modal-card-cartoon" (click)="$event.stopPropagation()">
+    <button class="close-btn-cartoon" (click)="close()">✕</button>
+
+    <div class="modal-body-cartoon">
+      <!-- Imagen -->
+      <div class="modal-image-side">
+        <img
+          [src]="selectedPet.image_url || 'https://via.placeholder.com/400x300?text=Sin+imagen'"
+          [alt]="selectedPet.name"
+        />
+        <span class="modal-species-emoji">{{ emoji }}</span>
+      </div>
+
+      <!-- Info -->
+      <div class="modal-info-side">
+        <h3 class="modal-pet-name">{{ selectedPet.name }}</h3>
+
+        <div class="status-badge" [ngClass]="statusClass">
+          {{ statusText }}
+        </div>
+
+        <div class="info-grid">
+          <div class="info-row">
+            <span class="info-label">🎂 Edad</span>
+            <span class="info-value">{{ ageText }}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">{{ genderEmoji }} Sexo</span>
+            <span class="info-value">{{ selectedPet.gender }}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">🏷️ Raza</span>
+            <span class="info-value">{{ selectedPet.race }}</span>
+          </div>
+        </div>
+
+        <div class="description-box" *ngIf="selectedPet.description">
+          <span class="desc-label">📖 Sobre {{ selectedPet.name }}</span>
+          <p>{{ selectedPet.description }}</p>
+        </div>
+
+        <button class="btn-adopt-cartoon" [disabled]="notAvailable" (click)="handleAdopt()">
+          {{ notAvailable ? 'Estado: ' + statusText : '¡Quiero Adoptar! 🐾' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

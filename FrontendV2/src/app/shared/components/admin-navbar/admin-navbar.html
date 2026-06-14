@@ -1,0 +1,89 @@
+<p>admin-navbar works!</p>
+<nav class="navbar navbar-expand-lg admin-navbar-cartoon py-3">
+  <div class="container-fluid px-lg-4">
+    <!-- Brand -->
+    <a class="navbar-brand admin-brand" routerLink="/admin">
+      <span class="admin-icon">🛡️</span>
+      <span class="admin-text">Panel Admin</span>
+    </a>
+
+    <!-- Toggler -->
+    <button
+      class="navbar-toggler cartoon-toggler-admin"
+      type="button"
+      data-bs-toggle="collapse"
+      data-bs-target="#adminNavbarNav"
+      aria-label="Abrir menú"
+    >
+      <span class="bi bi-list"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="adminNavbarNav">
+      <!-- Nav links -->
+      <ul class="navbar-nav me-auto align-items-center">
+        <li class="nav-item">
+          <a class="nav-link admin-nav-link" routerLink="/admin">
+            <i class="bi bi-people-fill"></i> Usuarios
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link admin-nav-link" routerLink="/admin/dashboard">
+            <i class="bi bi-graph-up-arrow"></i> Dashboard
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link admin-nav-link" routerLink="/admin/mascotas">
+            <i class="bi bi-house-heart"></i> Mascotas
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link admin-nav-link" routerLink="/admin/adopcion">
+            <i class="bi bi-heart-fill"></i> Adopción
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link admin-nav-link" routerLink="/admin/historial">
+            <i class="bi bi-journal-text"></i> Historial
+          </a>
+        </li>
+      </ul>
+
+      <!-- Right side actions -->
+      <div class="d-flex align-items-center gap-3">
+        <!-- Ver sitio dropdown -->
+        <div class="dropdown">
+          <button
+            class="btn btn-view-site dropdown-toggle shadow-sm"
+            type="button"
+            data-bs-toggle="dropdown"
+            aria-expanded="false"
+          >
+            <i class="bi bi-eye-fill me-1"></i> Ver Sitio
+          </button>
+          <ul class="dropdown-menu dropdown-menu-end cartoon-dropdown p-2 mt-2">
+            <li>
+              <a class="dropdown-item cartoon-dropdown-item py-2" routerLink="/">
+                <i class="bi bi-house-door me-2"></i> Inicio
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item cartoon-dropdown-item py-2" routerLink="/usuarios/mascotas">
+                <i class="bi bi-paw me-2"></i> Ver Mascotas
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item cartoon-dropdown-item py-2" routerLink="/usuarios/publicar">
+                <i class="bi bi-plus-circle me-2"></i> Publicar Mascota
+              </a>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Logout -->
+        <button class="btn btn-logout-admin shadow-sm" (click)="logout()">
+          <i class="bi bi-box-arrow-right"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+</nav>

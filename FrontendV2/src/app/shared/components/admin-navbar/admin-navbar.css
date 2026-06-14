@@ -1,0 +1,124 @@
+/* ── Navbar base ──────────────────────────────────── */
+.admin-navbar-cartoon {
+  background: var(--ink);
+  border-bottom: 4px solid var(--ink);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+/* ── Brand ────────────────────────────────────────── */
+.admin-brand {
+  font-family: var(--font-display);
+  font-weight: 800;
+  color: white !important;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 1.4rem;
+}
+
+.admin-icon {
+  font-size: 1.5rem;
+  filter: drop-shadow(2px 2px 0 rgba(0, 0, 0, 0.5));
+}
+
+.admin-text {
+  background: linear-gradient(135deg, var(--mustard) 0%, #fff 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ── Nav links ────────────────────────────────────── */
+.admin-nav-link {
+  color: rgba(255, 255, 255, 0.8) !important;
+  font-weight: 600;
+  font-family: var(--font-display);
+  padding: 0.5rem 1rem !important;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.admin-nav-link:hover {
+  color: var(--mustard) !important;
+  transform: translateY(-2px);
+}
+
+.admin-nav-link i {
+  font-size: 1.1rem;
+  opacity: 0.7;
+}
+
+/* ── Ver Sitio button ─────────────────────────────── */
+.btn-view-site {
+  background: var(--mustard);
+  color: var(--ink);
+  font-weight: 700;
+  font-family: var(--font-display);
+  border: 2px solid var(--ink);
+  border-radius: 12px;
+  padding: 6px 16px;
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  box-shadow: 3px 3px 0 var(--ink);
+}
+
+.btn-view-site:hover {
+  transform: translateY(-3px);
+  box-shadow: 5px 5px 0 var(--ink);
+  background: var(--coral);
+  color: white;
+}
+
+/* ── Dropdown cartoon ─────────────────────────────── */
+.cartoon-dropdown {
+  border: 2.5px solid var(--ink) !important;
+  border-radius: 16px !important;
+  box-shadow: 5px 5px 0 var(--ink) !important;
+  background: var(--cream) !important;
+}
+
+.cartoon-dropdown-item {
+  font-family: var(--font-display);
+  font-weight: 600;
+  border-radius: 10px !important;
+  transition: all 0.2s ease;
+  font-size: 0.95rem;
+}
+
+.cartoon-dropdown-item:hover {
+  background-color: var(--mustard) !important;
+  transform: translateX(6px);
+  color: var(--ink) !important;
+}
+
+/* ── Logout button ────────────────────────────────── */
+.btn-logout-admin {
+  background: #ff6b6b;
+  color: white;
+  border: 2px solid var(--ink);
+  border-radius: 12px;
+  padding: 6px 12px;
+  box-shadow: 3px 3px 0 var(--ink);
+  transition: all 0.3s ease;
+}
+
+.btn-logout-admin:hover {
+  background: #ff4747;
+  transform: scale(1.1) rotate(5deg);
+  box-shadow: 4px 4px 0 var(--ink);
+}
+
+/* ── Toggler ──────────────────────────────────────── */
+.cartoon-toggler-admin {
+  border: 2px solid white;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 8px;
+}
+
+/*
+  Los estilos de SweetAlert2 (.swal-cartoon-popup, .swal-btn-confirm,
+  .swal-btn-cancel) van en styles.css global — ya los tienes del navbar
+  principal, no hace falta duplicarlos.
+*/

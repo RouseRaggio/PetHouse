@@ -1,0 +1,29 @@
+.swal-cartoon-popup {
+  border-radius: 20px !important;
+  border: 3px solid var(--ink) !important;
+  box-shadow: 6px 6px 0 var(--ink) !important;
+  font-family: var(--font-display) !important;
+}
+
+.swal-btn-confirm {
+  background: var(--mustard) !important;
+  color: var(--ink) !important;
+  border: 2.5px solid var(--ink) !important;
+  border-radius: 50px !important;
+  padding: 10px 24px !important;
+  font-weight: 700 !important;
+  font-family: var(--font-display) !important;
+  box-shadow: 3px 3px 0 var(--ink) !important;
+  margin-right: 10px !important;
+}
+
+.swal-btn-cancel {
+  background: white !important;
+  color: var(--coral) !important;
+  border: 2.5px solid var(--ink) !important;
+  border-radius: 50px !important;
+  padding: 10px 24px !important;
+  font-weight: 700 !important;
+  font-family: var(--font-display) !important;
+  box-shadow: 3px 3px 0 var(--ink) !important;
+}

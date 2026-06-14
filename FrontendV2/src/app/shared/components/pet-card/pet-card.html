@@ -1,0 +1,38 @@
+<div class="pet-card-cartoon" (click)="view.emit()">
+  <div class="card-image-wrap">
+    <img
+      [src]="pet.image_url || 'https://via.placeholder.com/300x200?text=Sin+imagen'"
+      class="card-img"
+      [alt]="pet.name"
+    />
+
+    <span class="status-tag" [ngClass]="statusColorClass">
+      {{ statusText }}
+    </span>
+
+    @if (pet.gender) {
+      <span class="gender-tag" [ngClass]="pet.gender === 'macho' ? 'male' : 'female'">
+        {{ pet.gender === 'macho' ? '♂' : '♀' }}
+      </span>
+    }
+
+    <span class="species-emoji">{{ emoji }}</span>
+  </div>
+
+  <div class="card-content">
+    <h4 class="pet-name">{{ pet.name }}</h4>
+
+    <div class="pet-details">
+      <span class="detail-chip">
+        <i class="bi bi-clock"></i> {{ ageText }}
+      </span>
+      @if (pet.race) {
+        <span class="detail-chip">
+          <i class="bi bi-tag"></i> {{ pet.race }}
+        </span>
+      }
+    </div>
+
+    <button class="btn-view-profile">Ver Perfil 🐾</button>
+  </div>
+</div>

@@ -1,0 +1,13 @@
+<div class="search-wrapper">
+  <div class="search-container">
+    <span class="search-icon">🔍</span>
+    <input
+      type="text"
+      class="search-input"
+      placeholder="Buscar por nombre, especie o raza..."
+      [value]="search"
+      (input)="onInput($any($event.target).value)"
+    />
+    <button *ngIf="search" class="search-clear" (click)="clear()">✕</button>
+  </div>
+</div>
