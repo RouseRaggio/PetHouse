@@ -35,14 +35,85 @@ export class AdminMascotasComponent implements OnInit, OnDestroy {
     this.grid?.destroy();
   }
 
+  // async loadPets(): Promise<void> {
+  //   try {
+  //     this.pets = await this.petService.getAllPets();
+  //     setTimeout(() => this.renderGrid(), 0);
+  //   } catch (error) {
+  //     console.error('Error cargando mascotas:', error);
+  //   }
+  // }
+
+
   async loadPets(): Promise<void> {
-    try {
-      this.pets = await this.petService.getAllPets();
-      setTimeout(() => this.renderGrid(), 0);
-    } catch (error) {
-      console.error('Error cargando mascotas:', error);
+  this.pets = [
+    {
+      id: 1,
+      name: 'Max',
+      publisher_name: 'Carlos Pérez',
+      species: 'Perro',
+      race: 'Labrador',
+      status: 'PENDING_APPROVAL',
+      created_at: '2026-06-17T10:00:00'
+    },
+    {
+      id: 2,
+      name: 'Luna',
+      publisher_name: 'María González',
+      species: 'Gato',
+      race: 'Siamés',
+      status: 'AVAILABLE',
+      created_at: '2026-06-16T15:30:00'
+    },
+    {
+      id: 3,
+      name: 'Rocky',
+      publisher_name: 'Juan Rodríguez',
+      species: 'Perro',
+      race: 'Pitbull',
+      status: 'ADOPTED',
+      created_at: '2026-06-15T08:45:00'
+    },
+    {
+      id: 4,
+      name: 'Nala',
+      publisher_name: 'Andrea Martínez',
+      species: 'Gato',
+      race: 'Criollo',
+      status: 'REJECTED',
+      created_at: '2026-06-14T11:20:00'
+    },
+    {
+      id: 5,
+      name: 'Toby',
+      publisher_name: 'Sofía Herrera',
+      species: 'Perro',
+      race: 'Golden Retriever',
+      status: 'AVAILABLE',
+      created_at: '2026-06-13T09:10:00'
+    },
+    {
+      id: 6,
+      name: 'Milo',
+      publisher_name: 'David López',
+      species: 'Gato',
+      race: 'Persa',
+      status: 'PENDING_APPROVAL',
+      created_at: '2026-06-12T17:45:00'
+    },
+    {
+      id: 7,
+      name: 'Coco',
+      publisher_name: 'Valentina Ruiz',
+      species: 'Perro',
+      race: 'Poodle',
+      status: 'AVAILABLE',
+      created_at: '2026-06-11T13:00:00'
     }
-  }
+  ];
+
+  setTimeout(() => this.renderGrid(), 0);
+}
 
   renderGrid(): void {
     const container = document.getElementById('pets-table-wrapper');

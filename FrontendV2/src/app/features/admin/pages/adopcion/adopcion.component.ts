@@ -86,14 +86,115 @@ export class AdminAdopcionComponent implements OnInit, OnDestroy {
   }
 
   // ── Load & Grid ───────────────────────────────────
+  // async loadRequests(): Promise<void> {
+  //   try {
+  //     this.requests = await this.adoptionService.getAdoptions();
+  //     setTimeout(() => this.renderGrid(), 0);
+  //   } catch (error) {
+  //     console.error('Error cargando solicitudes:', error);
+  //   }
+  // }
   async loadRequests(): Promise<void> {
-    try {
-      this.requests = await this.adoptionService.getAdoptions();
-      setTimeout(() => this.renderGrid(), 0);
-    } catch (error) {
-      console.error('Error cargando solicitudes:', error);
+  this.requests = [
+    {
+      id: 1,
+      fecha_solicitud: '2026-06-15T10:30:00',
+      quiere_tracker: true,
+      cedula_url: '',
+      recibo_url: '',
+      pet: {
+        name: 'Max'
+      },
+      adoptante: {
+        name: 'Carlos',
+        last_name: 'Pérez',
+        email: 'carlos@gmail.com'
+      },
+      status: {
+        id: 1,
+        name: 'PENDING'
+      }
+    },
+    {
+      id: 2,
+      fecha_solicitud: '2026-06-14T09:00:00',
+      quiere_tracker: false,
+      cedula_url: '',
+      recibo_url: '',
+      pet: {
+        name: 'Luna'
+      },
+      adoptante: {
+        name: 'María',
+        last_name: 'González',
+        email: 'maria@gmail.com'
+      },
+      status: {
+        id: 2,
+        name: 'APPROVED'
+      }
+    },
+    {
+      id: 3,
+      fecha_solicitud: '2026-06-13T15:45:00',
+      quiere_tracker: true,
+      cedula_url: '',
+      recibo_url: '',
+      pet: {
+        name: 'Rocky'
+      },
+      adoptante: {
+        name: 'Juan',
+        last_name: 'Rodríguez',
+        email: 'juan@gmail.com'
+      },
+      status: {
+        id: 3,
+        name: 'REJECTED'
+      }
+    },
+    {
+      id: 4,
+      fecha_solicitud: '2026-06-12T11:20:00',
+      quiere_tracker: false,
+      cedula_url: '',
+      recibo_url: '',
+      pet: {
+        name: 'Nala'
+      },
+      adoptante: {
+        name: 'Andrea',
+        last_name: 'Martínez',
+        email: 'andrea@gmail.com'
+      },
+      status: {
+        id: 1,
+        name: 'PENDING'
+      }
+    },
+    {
+      id: 5,
+      fecha_solicitud: '2026-06-11T08:10:00',
+      quiere_tracker: true,
+      cedula_url: '',
+      recibo_url: '',
+      pet: {
+        name: 'Toby'
+      },
+      adoptante: {
+        name: 'Sofía',
+        last_name: 'Herrera',
+        email: 'sofia@gmail.com'
+      },
+      status: {
+        id: 2,
+        name: 'APPROVED'
+      }
     }
-  }
+  ];
+
+  setTimeout(() => this.renderGrid(), 0);
+}
 
   renderGrid(): void {
     this.grid?.destroy();
