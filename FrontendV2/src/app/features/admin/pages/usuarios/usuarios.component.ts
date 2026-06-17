@@ -68,14 +68,77 @@ export class AdminUsuariosComponent implements OnInit, OnDestroy {
   }
 
   // ── Load & render ─────────────────────────────────
+  // async loadUsers(): Promise<void> {
+  //   try {
+  //     this.users = await this.userService.getUsers();
+  //     setTimeout(() => this.renderGrid(), 0);
+  //   } catch (error) {
+  //     console.error('Error cargando usuarios:', error);
+  //   }
+  // }
+
   async loadUsers(): Promise<void> {
-    try {
-      this.users = await this.userService.getUsers();
-      setTimeout(() => this.renderGrid(), 0);
-    } catch (error) {
-      console.error('Error cargando usuarios:', error);
+  this.users = [
+    {
+      id: 1,
+      name: 'Carlos',
+      last_name: 'Pérez',
+      email: 'carlos@pethouse.com',
+      role_id: 1,
+      created_at: '2026-06-17T10:00:00'
+    },
+    {
+      id: 2,
+      name: 'María',
+      last_name: 'González',
+      email: 'maria@gmail.com',
+      role_id: 2,
+      created_at: '2026-06-16T14:30:00'
+    },
+    {
+      id: 3,
+      name: 'Juan',
+      last_name: 'Rodríguez',
+      email: 'juan@gmail.com',
+      role_id: 2,
+      created_at: '2026-06-15T08:20:00'
+    },
+    {
+      id: 4,
+      name: 'Andrea',
+      last_name: 'Martínez',
+      email: 'andrea@gmail.com',
+      role_id: 3,
+      created_at: '2026-06-14T16:45:00'
+    },
+    {
+      id: 5,
+      name: 'Sofía',
+      last_name: 'Herrera',
+      email: 'sofia@gmail.com',
+      role_id: 2,
+      created_at: '2026-06-13T11:15:00'
+    },
+    {
+      id: 6,
+      name: 'David',
+      last_name: 'López',
+      email: 'david@gmail.com',
+      role_id: 2,
+      created_at: '2026-06-12T09:40:00'
+    },
+    {
+      id: 7,
+      name: 'Valentina',
+      last_name: 'Ruiz',
+      email: 'valentina@gmail.com',
+      role_id: 1,
+      created_at: '2026-06-11T18:10:00'
     }
-  }
+  ];
+
+  setTimeout(() => this.renderGrid(), 0);
+}
 
   renderGrid(): void {
     this.grid?.destroy();
