@@ -11,6 +11,7 @@ from app.db.base import Base
 from app.models import *
 
 # ROUTES
+from app.routes.chat import router as chat_router
 from app.routes.user_routes import router as user_router
 from app.routes.pet_routes import router as pet_router
 from app.routes.adoption_routes import router as adoption_router
@@ -21,7 +22,6 @@ from app.routes.permission_routes import router as permission_router
 from app.routes.tracker_routes import router as tracker_router
 from app.routes.tracker_location_routes import router as tracker_location_router
 from app.routes.audit_log_routes import router as audit_log_router
-
 
 app = FastAPI()
 
@@ -54,6 +54,7 @@ app.add_middleware(
         "http://127.0.0.1:8000",
         "http://localhost:3000",
         "http://127.0.0.1:3000",
+        "http://localhost:4200",
     ],
     allow_credentials=True,
     allow_methods=["*"],
@@ -68,6 +69,7 @@ app.add_middleware(
 # ROUTES
 # ==========================
 
+app.include_router(chat_router)
 app.include_router(user_router)
 app.include_router(pet_router)
 app.include_router(adoption_router)
