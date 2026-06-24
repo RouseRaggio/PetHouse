@@ -7,16 +7,12 @@ import { ChatService } from '../../core/services/chat';
 @Component({
   selector: 'app-chatbot',
   standalone: true,
-  imports: [
-    CommonModule,
-    FormsModule
-  ],
+  imports: [CommonModule, FormsModule],
   templateUrl: './chatbot.html',
-  styleUrls: ['./chatbot.css']
+  styleUrls: ['./chatbot.css'],
 })
 export class ChatbotComponent {
-
-  abierto = true;
+  abierto = false;
 
   mensaje = '';
 
@@ -24,44 +20,40 @@ export class ChatbotComponent {
 
   constructor(
     private chatService: ChatService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
   ) {}
 
   toggleChat() {
     this.abierto = !this.abierto;
   }
 
- enviar() {
+  enviar() {
+    if (!this.mensaje.trim()) {
+      return;
+    }
 
-  if (!this.mensaje.trim()) {
-    return;
-  }
+    const texto = this.mensaje;
 
-  const texto = this.mensaje;
+    // Mensaje usuario
+    this.mensajes.push({
+      tipo: 'usuario',
+      texto,
+    });
 
-  // Mensaje usuario
-  this.mensajes.push({
-    tipo: 'usuario',
-    texto
-  });
+    this.mensaje = '';
 
-  this.mensaje = '';
+    // Mensaje temporal
+    const mensajeTemporal = {
+      tipo: 'bot',
+      texto: '🐾 PetHouse IA está escribiendo...',
+    };
 
-  // Mensaje temporal
-  const mensajeTemporal = {
-    tipo: 'bot',
-    texto: '🐾 PetHouse IA está escribiendo...'
-  };
+    this.mensajes.push(mensajeTemporal);
 
-  this.mensajes.push(mensajeTemporal);
+    this.cdr.detectChanges();
 
-  this.cdr.detectChanges();
-
-  this.chatService
-    .enviarMensaje(texto)
-    .subscribe({
+    this.chatService.enviarMensaje(texto).subscribe({
       next: (resp: any) => {
-
         console.log('RESPUESTA IA:', resp);
 
         // Reemplazar mensaje temporal
@@ -79,15 +71,12 @@ export class ChatbotComponent {
       },
 
       error: (error) => {
-
         console.error('Error IA:', error);
 
-        mensajeTemporal.texto =
-          '❌ Lo siento, ocurrió un error al procesar tu solicitud.';
+        mensajeTemporal.texto = '❌ Lo siento, ocurrió un error al procesar tu solicitud.';
 
         this.cdr.detectChanges();
-      }
+      },
     });
-}
-
+  }
 }
