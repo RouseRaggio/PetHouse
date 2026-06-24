@@ -360,3 +360,24 @@
   transform: scale(0.93);
   box-shadow: 1px 1px 0px var(--ink);
 }
+
+/* ── Estado de espera (esperando respuesta del bot) ── */
+.chat-input:disabled {
+  background: #f0ebe4;
+  color: #a09a92;
+  cursor: not-allowed;
+  box-shadow: none;
+  border-color: #c8c0b5;
+}
+.chat-input:disabled::placeholder {
+  color: #b8a99a;
+}
+
+.send-btn:disabled {
+  background: #e8e2da;
+  color: #a09a92;
+  cursor: not-allowed;
+  box-shadow: none;
+  border-color: #c8c0b5;
+  transform: none;
+}

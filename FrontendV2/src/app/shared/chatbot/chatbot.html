@@ -38,11 +38,12 @@
       class="chat-input"
       [(ngModel)]="mensaje"
       (keyup.enter)="enviar()"
-      placeholder="Escribe tu mensaje..."
+      [placeholder]="esperando ? 'Espera la respuesta...' : 'Escribe tu mensaje...'"
+      [disabled]="esperando"
       rows="1"
     >
     </textarea>
-    <button class="send-btn" (click)="enviar()" title="Enviar">
+    <button class="send-btn" (click)="enviar()" [disabled]="esperando" title="Enviar">
       <svg
         xmlns="http://www.w3.org/2000/svg"
         width="18"

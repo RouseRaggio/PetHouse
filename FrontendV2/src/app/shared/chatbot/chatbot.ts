@@ -18,6 +18,8 @@ export class ChatbotComponent {
 
   mensajes: any[] = [];
 
+  esperando = false;
+
   constructor(
     private chatService: ChatService,
     private cdr: ChangeDetectorRef,
@@ -25,10 +27,18 @@ export class ChatbotComponent {
 
   toggleChat() {
     this.abierto = !this.abierto;
+
+    if (this.abierto && this.mensajes.length === 0) {
+      this.mensajes.push({
+        tipo: 'bot',
+        texto:
+          '¡Hola! 🐾 Soy Togo tu asistente virtual. ¿En qué puedo ayudarte hoy? Puedo orientarte sobre adopciones, cuidado de mascotas y nuestros servicios. 😊',
+      });
+    }
   }
 
   enviar() {
-    if (!this.mensaje.trim()) {
+    if (!this.mensaje.trim() || this.esperando) {
       return;
     }
 
@@ -41,6 +51,7 @@ export class ChatbotComponent {
     });
 
     this.mensaje = '';
+    this.esperando = true;
 
     // Mensaje temporal
     const mensajeTemporal = {
@@ -56,14 +67,13 @@ export class ChatbotComponent {
       next: (resp: any) => {
         console.log('RESPUESTA IA:', resp);
 
-        // Reemplazar mensaje temporal
         mensajeTemporal.texto = resp.respuesta;
+        this.esperando = false;
 
         this.cdr.detectChanges();
 
         setTimeout(() => {
           const contenedor = document.querySelector('.messages');
-
           if (contenedor) {
             contenedor.scrollTop = contenedor.scrollHeight;
           }
@@ -74,6 +84,7 @@ export class ChatbotComponent {
         console.error('Error IA:', error);
 
         mensajeTemporal.texto = '❌ Lo siento, ocurrió un error al procesar tu solicitud.';
+        this.esperando = false;
 
         this.cdr.detectChanges();
       },
