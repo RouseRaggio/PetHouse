@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session, joinedload
 from fastapi import HTTPException
 from datetime import datetime
-from app.core.email import send_adoption_approval_email
+from app.core.email import send_adoption_approval_email, send_adoption_rejection_email
 
 from app.models.adoption_model import Adoption
 from app.models.pet_model import Pet
@@ -124,12 +124,23 @@ def change_adoption_status(db: Session, adoption_id: int, status_id: int):
         # Enviar correo de aprobación
         try:
             send_adoption_approval_email(
-                adoption.adoptante.email, 
-                adoption.adoptante.name, 
+                adoption.adoptante.email,
+                adoption.adoptante.name,
                 adoption.pet.name
             )
         except Exception as e:
-            print(f"Error enviando correo de adopción: {e}")
+            print(f"Error enviando correo de aprobación: {e}")
+
+    elif status.name == "REJECTED":
+        # Enviar correo de rechazo
+        try:
+            send_adoption_rejection_email(
+                adoption.adoptante.email,
+                adoption.adoptante.name,
+                adoption.pet.name
+            )
+        except Exception as e:
+            print(f"Error enviando correo de rechazo: {e}")
 
     db.commit()
 

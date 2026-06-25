@@ -22,6 +22,7 @@ export class PublicarComponent {
   birth_date = '';
   gender = '';
   description = '';
+  modalidad = 'sede';
   imageFile: File | null = null;
   acceptedTerms = false;
   preview = '';
@@ -82,6 +83,7 @@ export class PublicarComponent {
     formData.append('birth_date', this.birth_date);
     formData.append('gender', this.gender);
     formData.append('description', this.description);
+    formData.append('modalidad', this.modalidad);
     if (this.imageFile) {
       formData.append('image', this.imageFile);
     }
@@ -90,12 +92,15 @@ export class PublicarComponent {
       await this.petService.createPet(formData);
 
       const isAdmin = isAdminRole(this.user);
+      const esHogar = this.modalidad === 'hogar';
 
       await Swal.fire({
-        title: isAdmin ? '¡Publicada!' : '¡Solicitud Recibida! 🐾',
+        title: isAdmin ? '\u00a1Publicada!' : '\u00a1Solicitud Recibida! \ud83d\udc3e',
         html: isAdmin
           ? 'La mascota se ha publicado directamente.'
-          : `Tu solicitud ha sido registrada.<br><br><b>Siguiente paso:</b> Acércate a nuestra casa de adopción para dejar a la mascota y completar el proceso oficial.`,
+          : esHogar
+            ? 'Tu solicitud ha sido registrada. El equipo de PetHouse la revisará pronto. Si es aprobada, los interesados podrán contactarte directamente.'
+            : 'Tu solicitud ha sido registrada.<br><br><b>Siguiente paso:</b> Una vez aprobada, recibirás un correo con las instrucciones para llevar a la mascota a nuestra sede.',
         icon: 'success',
         confirmButtonText: 'Entendido',
         confirmButtonColor: '#4361ee',
@@ -122,6 +127,7 @@ export class PublicarComponent {
     this.birth_date = '';
     this.gender = '';
     this.description = '';
+    this.modalidad = 'sede';
     this.imageFile = null;
     this.preview = '';
     this.acceptedTerms = false;

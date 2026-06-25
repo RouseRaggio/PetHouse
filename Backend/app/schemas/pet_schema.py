@@ -15,6 +15,8 @@ class PetCreate(BaseModel):
     gender: Optional[str]
     description: Optional[str]
     image_url: Optional[str]
+    modalidad: Optional[str] = "sede"  # "sede" o "hogar"
+    telefono_contacto: Optional[str] = None
 
 
 # =========================
@@ -32,6 +34,8 @@ class PetUpdate(BaseModel):
     status: Optional[str] = None
     gps_status: Optional[str] = None
     gps_imei: Optional[str] = None
+    modalidad: Optional[str] = None
+    telefono_contacto: Optional[str] = None
 
 
 # =========================
@@ -51,6 +55,8 @@ class PetResponse(BaseModel):
     status: Optional[str]
     gps_status: Optional[str] = "none"
     gps_imei: Optional[str] = None
+    modalidad: Optional[str] = "sede"
+    telefono_contacto: Optional[str] = None
     adopter_name: Optional[str] = None
     adopter_id: Optional[int] = None
     publisher_name: Optional[str] = None

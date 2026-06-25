@@ -1,6 +1,5 @@
 <app-navbar />
 
-<!-- ===== HERO ===== -->
 <section class="hero-cartoon">
   <div class="paw-pattern hero-paws"></div>
 
@@ -99,7 +98,7 @@
     </div>
 
     <div *ngIf="hasMore" class="see-more-wrap">
-      <a routerLink="/usuarios/mascotas" class="btn-see-more">
+      <a routerLink="/mascotas" class="btn-see-more">
         Ver todas las mascotas 🐾
         <span class="see-more-count">+{{ extraCount }} más</span>
       </a>
@@ -120,7 +119,7 @@
           <h3 class="cta-title">¿Tienes una mascota que <em>busca hogar</em>?</h3>
           <p class="cta-subtitle">Publica gratis y llega a miles de familias en minutos.</p>
         </div>
-        <a routerLink="/usuarios/publicar" class="btn-cta">
+        <a routerLink="/publicar" class="btn-cta">
           Publicar mascota <span class="cta-arrow">→</span>
         </a>
       </div>

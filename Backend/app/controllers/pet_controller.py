@@ -7,7 +7,7 @@ from app.models.pet_model import Pet
 from app.models.adoption_model import Adoption
 from app.models.user_model import User
 from app.schemas.pet_schema import PetCreate, PetUpdate
-from app.core.email import send_gps_email
+from app.core.email import send_gps_email, send_pet_approval_email, send_pet_rejection_email, send_sede_instructions_email
 from app.controllers.audit_log_controller import log_action
 
 
@@ -45,7 +45,9 @@ def create_pet(db: Session, pet: PetCreate, user_id: int, image: UploadFile = No
         description=pet.description,
         image_url=image_url,
         image_data=image_data,
-        status=initial_status
+        status=initial_status,
+        modalidad=pet.modalidad or "sede",
+        telefono_contacto=pet.telefono_contacto,
     )
 
     db.add(new_pet)
@@ -175,10 +177,27 @@ def update_pet(db: Session, pet_id: int, data: PetUpdate):
             Adoption.pet_id == pet.id,
             Adoption.deleted_at == None
         ).update({"deleted_at": datetime.utcnow()}, synchronize_session=False)
-        
+
         # Resetear estado GPS
         pet.gps_status = "none"
         pet.gps_imei = None
+
+        # Notificar al publicador que su mascota fue aprobada
+        try:
+            publisher = pet.publisher
+            if publisher:
+                send_pet_approval_email(publisher.email, publisher.name, pet.name)
+        except Exception as e:
+            print(f"Error enviando correo de aprobación de mascota: {e}")
+
+    elif "status" in update_data and update_data["status"] == "REJECTED":
+        # Notificar al publicador que su publicación fue rechazada
+        try:
+            publisher = pet.publisher
+            if publisher:
+                send_pet_rejection_email(publisher.email, publisher.name, pet.name)
+        except Exception as e:
+            print(f"Error enviando correo de rechazo de mascota: {e}")
 
     # Envío de correo si el GPS es aprobado o se actualiza el IMEI
     is_becoming_approved = ("gps_status" in update_data and update_data["gps_status"] == "approved")

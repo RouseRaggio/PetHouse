@@ -8,8 +8,9 @@ import { UserService } from '../../../../core/services/user.service';
 import { AuthService } from '../../../../core/services/auth.service';
 import { isAdminRole } from '../../../../shared/utils/roles';
 import { getAndClearRedirectUrl } from '../../../../shared/utils/auth';
+import { environment } from '../../../../../environments/environment';
 
-const GOOGLE_CLIENT_ID = ''; // ← pega aquí tu GOOGLE_CLIENT_ID
+const GOOGLE_CLIENT_ID = environment.googleClientId;
 
 @Component({
   selector: 'app-login',
@@ -60,7 +61,7 @@ export class LoginComponent implements OnInit {
     }
   }
 
-  // ── Password rules ────────────────────────────────
+  //Password rules
   get pwdRules() {
     return {
       length: this.password.length >= 8,

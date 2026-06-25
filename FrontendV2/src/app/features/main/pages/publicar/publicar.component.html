@@ -89,8 +89,48 @@
                 class="form-control cartoon-input"
                 rows="4"
                 [(ngModel)]="description"
-                placeholder="Es muy juguetón, le gustan los niños..."
+                [placeholder]="
+                  modalidad === 'hogar'
+                    ? 'Es muy juguetón, le gustan los niños... (Incluye tu número de contacto o WhatsApp para que los interesados te escriban 📱)'
+                    : 'Es muy juguetón, le gustan los niños...'
+                "
               ></textarea>
+              <div *ngIf="modalidad === 'hogar'" class="mt-1 text-primary small">
+                <i class="bi bi-info-circle-fill me-1"></i>
+                Recuerda incluir tu <strong>número de contacto o WhatsApp</strong> en la descripción
+                para que los interesados puedan comunicarse contigo.
+              </div>
+            </div>
+
+            <!-- Modalidad de entrega -->
+            <div class="col-12 order-3">
+              <label class="form-label cartoon-label">¿Dónde estará la mascota? *</label>
+              <div class="d-flex gap-3 mt-1">
+                <div
+                  class="modalidad-card flex-fill p-3 rounded-3 border text-center"
+                  [class.selected]="modalidad === 'sede'"
+                  (click)="modalidad = 'sede'"
+                  style="cursor: pointer"
+                >
+                  <div style="font-size: 1.6rem">🏡</div>
+                  <div class="fw-bold small mt-1">La llevo a la sede</div>
+                  <div class="text-muted" style="font-size: 0.75rem">
+                    PetHouse se encarga del proceso
+                  </div>
+                </div>
+                <div
+                  class="modalidad-card flex-fill p-3 rounded-3 border text-center"
+                  [class.selected]="modalidad === 'hogar'"
+                  (click)="modalidad = 'hogar'"
+                  style="cursor: pointer"
+                >
+                  <div style="font-size: 1.6rem">🏠</div>
+                  <div class="fw-bold small mt-1">Se queda en mi hogar</div>
+                  <div class="text-muted" style="font-size: 0.75rem">
+                    Los interesados te contactan directo
+                  </div>
+                </div>
+              </div>
             </div>
 
             <!-- Legal + Submit -->

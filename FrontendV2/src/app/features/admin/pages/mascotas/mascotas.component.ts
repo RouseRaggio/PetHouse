@@ -44,76 +44,14 @@ export class AdminMascotasComponent implements OnInit, OnDestroy {
   //   }
   // }
 
-
   async loadPets(): Promise<void> {
-  this.pets = [
-    {
-      id: 1,
-      name: 'Max',
-      publisher_name: 'Carlos Pérez',
-      species: 'Perro',
-      race: 'Labrador',
-      status: 'PENDING_APPROVAL',
-      created_at: '2026-06-17T10:00:00'
-    },
-    {
-      id: 2,
-      name: 'Luna',
-      publisher_name: 'María González',
-      species: 'Gato',
-      race: 'Siamés',
-      status: 'AVAILABLE',
-      created_at: '2026-06-16T15:30:00'
-    },
-    {
-      id: 3,
-      name: 'Rocky',
-      publisher_name: 'Juan Rodríguez',
-      species: 'Perro',
-      race: 'Pitbull',
-      status: 'ADOPTED',
-      created_at: '2026-06-15T08:45:00'
-    },
-    {
-      id: 4,
-      name: 'Nala',
-      publisher_name: 'Andrea Martínez',
-      species: 'Gato',
-      race: 'Criollo',
-      status: 'REJECTED',
-      created_at: '2026-06-14T11:20:00'
-    },
-    {
-      id: 5,
-      name: 'Toby',
-      publisher_name: 'Sofía Herrera',
-      species: 'Perro',
-      race: 'Golden Retriever',
-      status: 'AVAILABLE',
-      created_at: '2026-06-13T09:10:00'
-    },
-    {
-      id: 6,
-      name: 'Milo',
-      publisher_name: 'David López',
-      species: 'Gato',
-      race: 'Persa',
-      status: 'PENDING_APPROVAL',
-      created_at: '2026-06-12T17:45:00'
-    },
-    {
-      id: 7,
-      name: 'Coco',
-      publisher_name: 'Valentina Ruiz',
-      species: 'Perro',
-      race: 'Poodle',
-      status: 'AVAILABLE',
-      created_at: '2026-06-11T13:00:00'
+    try {
+      this.pets = await this.petService.getAllPets();
+      setTimeout(() => this.renderGrid(), 0);
+    } catch (error) {
+      console.error('Error cargando mascotas:', error);
     }
-  ];
-
-  setTimeout(() => this.renderGrid(), 0);
-}
+  }
 
   renderGrid(): void {
     const container = document.getElementById('pets-table-wrapper');
@@ -152,6 +90,16 @@ export class AdminMascotasComponent implements OnInit, OnDestroy {
             const buttons = [];
 
             if (pet.status === 'PENDING_APPROVAL') {
+              buttons.push(
+                h(
+                  'button',
+                  {
+                    className: 'btn btn-sm btn-primary me-1 shadow-sm',
+                    onClick: () => this.viewPet(pet),
+                  },
+                  '👁️ Ver',
+                ),
+              );
               buttons.push(
                 h(
                   'button',
@@ -219,6 +167,118 @@ export class AdminMascotasComponent implements OnInit, OnDestroy {
     });
 
     this.grid.render(container);
+  }
+
+  async viewPet(pet: any): Promise<void> {
+    let age = 'No especificada';
+    if (pet.birth_date) {
+      const birth = new Date(pet.birth_date);
+      const now = new Date();
+      // Comparar solo fechas (sin hora) para evitar problemas de zona horaria
+      const birthUTC = Date.UTC(birth.getFullYear(), birth.getMonth(), birth.getDate());
+      const nowUTC = Date.UTC(now.getFullYear(), now.getMonth(), now.getDate());
+      const totalDays = Math.floor((nowUTC - birthUTC) / (1000 * 60 * 60 * 24));
+      const years = Math.floor(totalDays / 365);
+      const months = Math.floor((totalDays % 365) / 30);
+      const days = totalDays % 30;
+
+      if (years > 0) {
+        age =
+          months > 0
+            ? `${years} año${years > 1 ? 's' : ''} y ${months} mes${months > 1 ? 'es' : ''}`
+            : `${years} año${years > 1 ? 's' : ''}`;
+      } else if (months > 0) {
+        age =
+          days > 0
+            ? `${months} mes${months > 1 ? 'es' : ''} y ${days} día${days > 1 ? 's' : ''}`
+            : `${months} mes${months > 1 ? 'es' : ''}`;
+      } else {
+        age = totalDays > 0 ? `${totalDays} día${totalDays !== 1 ? 's' : ''}` : 'Recién nacido';
+      }
+    }
+
+    const genderLabel: Record<string, string> = {
+      macho: '♂️ Macho',
+      hembra: '♀️ Hembra',
+    };
+
+    const imageHtml = pet.image_url
+      ? `<img src="${pet.image_url}" alt="${pet.name}"
+            style="width:100%;max-height:260px;object-fit:cover;border-radius:12px;margin-bottom:12px;"
+            onerror="this.style.display='none'">`
+      : `<div class="text-muted mb-3" style="font-size:3rem;">🐾</div>`;
+
+    const modalidadBadge =
+      pet.modalidad === 'hogar'
+        ? `<span class="badge bg-warning text-dark">🏠 Se queda en hogar del publicador</span>`
+        : `<span class="badge bg-primary">🏡 Se entrega en sede PetHouse</span>`;
+
+    const telefonoRow = '';
+
+    const isSede = pet.modalidad !== 'hogar';
+
+    const { value: action } = await Swal.fire({
+      title: `${pet.name}`,
+      html: `
+        ${imageHtml}
+        <div class="mb-2">${modalidadBadge}</div>
+        <table class="table table-sm text-start" style="font-size:.9rem;">
+          <tbody>
+            <tr><th>Especie</th><td>${pet.species ?? '—'}</td></tr>
+            <tr><th>Raza</th><td>${pet.race ?? '—'}</td></tr>
+            <tr><th>Género</th><td>${genderLabel[pet.gender] ?? pet.gender ?? '—'}</td></tr>
+            <tr><th>Edad</th><td>${age}</td></tr>
+            <tr><th>Publicado por</th><td>${pet.publisher_name ?? '—'}</td></tr>
+            <tr><th>Fecha publicación</th><td>${pet.created_at ? new Date(pet.created_at).toLocaleDateString('es-CO') : '—'}</td></tr>
+            ${telefonoRow}
+          </tbody>
+        </table>
+        <div class="text-start p-2 bg-light rounded" style="font-size:.88rem;">
+          <strong>Descripción:</strong><br>
+          ${pet.description ?? '<em class="text-muted">Sin descripción</em>'}
+        </div>
+        ${isSede ? '<div class="mt-2 p-2 bg-warning bg-opacity-10 border border-warning rounded text-start" style="font-size:.82rem;"><i class="bi bi-envelope-fill me-1 text-warning"></i><strong>Sede:</strong> Envía primero las instrucciones al publicador. Una vez la mascota llegue a la sede, aprueba la publicación.</div>' : ''}
+      `,
+      showDenyButton: true,
+      showCancelButton: true,
+      confirmButtonText: '✅ Aprobar',
+      denyButtonText: isSede ? '📧 Enviar instrucciones' : '❌ Rechazar',
+      cancelButtonText: isSede ? '❌ Rechazar' : 'Cerrar',
+      confirmButtonColor: '#198754',
+      denyButtonColor: isSede ? '#f0a500' : '#dc3545',
+      cancelButtonColor: isSede ? '#dc3545' : '#6c757d',
+      width: '520px',
+    });
+
+    if (action === true) {
+      await this.approvePet(pet);
+    } else if (action === false) {
+      if (isSede) {
+        await this.sendSedeInstructions(pet);
+      } else {
+        await this.rejectPet(pet);
+      }
+    } else if (action === undefined && isSede) {
+      // cancelButtonText → Rechazar (solo para sede)
+      const btn = document.querySelector('.swal2-cancel') as HTMLElement;
+      if (btn?.innerText?.includes('Rechazar')) {
+        await this.rejectPet(pet);
+      }
+    }
+  }
+
+  async sendSedeInstructions(pet: any): Promise<void> {
+    try {
+      await this.petService.sendSedeInstructions(pet.id);
+      Swal.fire({
+        title: '📧 Instrucciones enviadas',
+        text: `Se le notificó a ${pet.publisher_name} para que lleve a ${pet.name} a la sede. Una vez recibida, aprueba la publicación.`,
+        icon: 'success',
+        confirmButtonColor: '#f0a500',
+      });
+    } catch (e: any) {
+      Swal.fire('Error', e?.error?.detail || 'No se pudo enviar el correo.', 'error');
+    }
   }
 
   async approvePet(pet: any): Promise<void> {

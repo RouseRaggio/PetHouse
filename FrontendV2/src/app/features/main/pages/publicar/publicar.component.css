@@ -4,6 +4,20 @@
   font-family: var(--font-body);
 }
 
+.modalidad-card {
+  border: 2px solid #dee2e6;
+  transition:
+    border-color 0.2s,
+    background 0.2s;
+}
+.modalidad-card.selected {
+  border-color: #4361ee;
+  background: #f0f3ff;
+}
+.modalidad-card:hover {
+  border-color: #4361ee;
+}
+
 .publish-card {
   background: white;
   border: 3px solid var(--ink);

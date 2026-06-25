@@ -20,6 +20,8 @@ class Pet(Base):
     status = Column(String)
     gps_status = Column(String, default="none") # "none", "pending", "approved"
     gps_imei = Column(String, nullable=True)
+    modalidad = Column(String, default="sede")  # "sede" o "hogar"
+    telefono_contacto = Column(String, nullable=True)
 
     created_at = Column(DateTime, default=datetime.utcnow)
     deleted_at = Column(DateTime, nullable=True)

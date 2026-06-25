@@ -64,4 +64,17 @@ export class PetService {
       }),
     );
   }
+
+  async sendSedeInstructions(id: number): Promise<any> {
+    const token = localStorage.getItem('token');
+    return firstValueFrom(
+      this.http.post(
+        `${this.apiUrl}/pets/${id}/send-instructions`,
+        {},
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      ),
+    );
+  }
 }

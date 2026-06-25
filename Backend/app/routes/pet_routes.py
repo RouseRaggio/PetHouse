@@ -40,11 +40,12 @@ def create(
     birth_date: Optional[str] = Form(None),
     gender: Optional[str] = Form(None),
     description: Optional[str] = Form(None),
+    modalidad: Optional[str] = Form("sede"),
+    telefono_contacto: Optional[str] = Form(None),
     image: Optional[UploadFile] = File(None),
     current_user = Depends(get_current_active_user),
     db: Session = Depends(get_db)
 ):
-    # Aquí luego conectaremos el usuario autenticado
     pet_data = PetCreate(
         name=name,
         species=species,
@@ -52,7 +53,9 @@ def create(
         birth_date=parse_birth_date(birth_date) if birth_date else None,
         gender=gender,
         description=description,
-        image_url=None  # Se asignará si hay imagen
+        image_url=None,
+        modalidad=modalidad,
+        telefono_contacto=telefono_contacto,
     )
     return create_pet(db, pet_data, user_id=current_user.id, image=image)
 
@@ -79,3 +82,17 @@ def update(pet_id: int, data: PetUpdate, db: Session = Depends(get_db)):
 @router.delete("/{pet_id}")
 def delete(pet_id: int, db: Session = Depends(get_db)):
     return delete_pet(db, pet_id)
+
+
+# SEND SEDE INSTRUCTIONS EMAIL (without approving)
+@router.post("/{pet_id}/send-instructions")
+def send_instructions(pet_id: int, db: Session = Depends(get_db)):
+    from app.controllers.pet_controller import get_pet
+    from app.core.email import send_sede_instructions_email
+    pet = get_pet(db, pet_id)
+    if not pet.publisher:
+        raise HTTPException(400, "El publicador no tiene correo registrado")
+    sent = send_sede_instructions_email(pet.publisher.email, pet.publisher.name, pet.name)
+    if not sent:
+        raise HTTPException(500, "No se pudo enviar el correo. Verifica las credenciales SMTP.")
+    return {"message": f"Instrucciones enviadas a {pet.publisher.email}"}
