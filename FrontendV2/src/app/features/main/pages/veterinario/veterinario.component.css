@@ -38,6 +38,21 @@
     transform: translateY(-8px);
   }
 }
+@keyframes attentionBounce {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(-3px);
+  }
+  65% {
+    transform: translateY(0);
+  }
+  80% {
+    transform: translateY(-2px);
+  }
+}
 @keyframes paw-float {
   0%,
   100% {
@@ -322,6 +337,49 @@
   gap: 1.2rem;
   flex-wrap: wrap;
 }
+.notif-bell-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: var(--border-thin);
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: transform 0.2s var(--bounce), background 0.2s ease;
+}
+.notif-bell-btn:hover {
+  transform: translateY(-2px);
+  background: rgba(255, 255, 255, 0.22);
+}
+.notif-bell-btn.active {
+  animation: attentionBounce 1.5s ease-in-out infinite;
+}
+.notif-bell-btn.open {
+  background: rgba(255, 255, 255, 0.22);
+}
+.notif-bell-count {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  min-width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  padding: 0 4px;
+  font-family: var(--font-display);
+  font-size: 0.68rem;
+  font-weight: 800;
+  color: #fff;
+  background: var(--coral);
+  border: 2px solid var(--ink);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
 .notif-lead {
   font-family: var(--font-display);
   font-size: 0.92rem;
@@ -359,6 +417,44 @@
   background: rgba(255, 107, 107, 0.2);
   border-color: var(--coral);
   color: #ffb3b3;
+}
+.notif-panel {
+  margin-top: 0.8rem;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1.5px solid rgba(255, 255, 255, 0.18);
+  border-radius: 14px;
+  padding: 0.7rem;
+  display: grid;
+  gap: 0.5rem;
+}
+.notif-panel-item {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 10px;
+  padding: 0.55rem 0.7rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.8rem;
+}
+.notif-panel-main {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+.notif-panel-icon {
+  font-size: 1rem;
+}
+.notif-panel-title {
+  font-family: var(--font-display);
+  font-size: 0.86rem;
+  color: #fff;
+  line-height: 1.2;
+}
+.notif-panel-date {
+  font-family: var(--font-body);
+  font-size: 0.74rem;
+  color: rgba(255, 255, 255, 0.72);
 }
 
 /* ══════════════════════════════════════════════════ SECCIÓN PRINCIPAL */

@@ -26,6 +26,15 @@ interface ChatMessage {
   text: string;
 }
 
+interface ReminderNotification {
+  careType: string;
+  icon: string;
+  date: string;
+  daysLeft: number;
+  urgency: 'urgent' | 'info';
+  message: string;
+}
+
 @Component({
   selector: 'app-veterinario',
   standalone: true,
@@ -36,8 +45,10 @@ interface ChatMessage {
 export class VeterinarioComponent implements OnInit, OnDestroy {
   user: any = null;
   agentOpen = false;
+  bellOpen = false;
   chatInput = '';
   chatMessages: ChatMessage[] = [];
+  private readonly notificationWindowDays = 7;
 
   private authSub!: Subscription;
 
@@ -132,13 +143,6 @@ export class VeterinarioComponent implements OnInit, OnDestroy {
     },
   ];
 
-  notifications = [
-    { message: 'Desparasitación de Luna vence en 7 días', icon: '🪱', urgency: 'urgent' },
-    { message: 'Baño programado para mañana', icon: '🛁', urgency: 'info' },
-    { message: 'Vacuna antirrábica en 3 semanas', icon: '💉', urgency: 'info' },
-  ];
-  // ──────────────────────────────────────────────────────────────────────────
-
   constructor(private authService: AuthService) {}
 
   ngOnInit(): void {
@@ -152,7 +156,43 @@ export class VeterinarioComponent implements OnInit, OnDestroy {
   }
 
   get urgentCount(): number {
-    return this.upcomingCare.filter((c) => c.status === 'urgent').length;
+    return this.reminderNotifications.filter((n) => n.urgency === 'urgent').length;
+  }
+
+  get bellCount(): number {
+    return this.reminderNotifications.length;
+  }
+
+  get hasActiveReminders(): boolean {
+    return this.bellCount > 0;
+  }
+
+  get hasUrgentReminders(): boolean {
+    return this.urgentCount > 0;
+  }
+
+  get reminderNotifications(): ReminderNotification[] {
+    return this.upcomingCare
+      .map((care) => {
+        const daysLeft = this.getDaysUntil(care.date);
+        const urgency: 'urgent' | 'info' = daysLeft <= 2 ? 'urgent' : 'info';
+
+        return {
+          careType: care.type,
+          icon: care.icon,
+          date: care.date,
+          daysLeft,
+          urgency,
+          message: `${care.type} ${this.formatRelativeDay(daysLeft)}`,
+        };
+      })
+      .filter((notification) => notification.daysLeft >= 0)
+      .filter((notification) => notification.daysLeft <= this.notificationWindowDays)
+      .sort((a, b) => a.daysLeft - b.daysLeft);
+  }
+
+  toggleBellPanel(): void {
+    this.bellOpen = !this.bellOpen;
   }
 
   openAgent(): void {
@@ -194,5 +234,15 @@ export class VeterinarioComponent implements OnInit, OnDestroy {
     const now = new Date();
     const target = new Date(dateStr);
     return Math.ceil((target.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+  }
+
+  private formatRelativeDay(daysLeft: number): string {
+    if (daysLeft === 0) {
+      return 'vence hoy';
+    }
+    if (daysLeft === 1) {
+      return 'vence mañana';
+    }
+    return `vence en ${daysLeft} días`;
   }
 }

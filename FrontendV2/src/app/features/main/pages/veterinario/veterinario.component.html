@@ -55,26 +55,28 @@
   </div>
 </section>
 
-<<<<<<< HEAD
-<!-- NOTIFICACIONES -->
-=======
 <!-- ═══════════════════════════════════════════════════════ NOTIFICACIONES -->
->>>>>>> 7d5c9fb (feat: add Veterinario component with health management features for pets)
-<div *ngIf="user && urgentCount > 0" class="notif-bar">
+<div *ngIf="user && hasActiveReminders" class="notif-bar">
   <div class="container">
     <div class="notif-inner">
+      <button
+        class="notif-bell-btn"
+        [class.active]="hasUrgentReminders"
+        [class.open]="bellOpen"
+        (click)="toggleBellPanel()"
+        title="Ver recordatorios"
+      >
+        <i class="bi bi-bell-fill"></i>
+        <span class="notif-bell-count">{{ bellCount }}</span>
+      </button>
       <span class="notif-lead">
         <span class="notif-dot urgent"></span>
-        <strong
-          >{{ urgentCount }} recordatorio{{ urgentCount > 1 ? 's' : '' }} urgente{{
-            urgentCount > 1 ? 's' : ''
-          }}</strong
-        >
-        para Luna
+        <strong>{{ bellCount }} recordatorio{{ bellCount > 1 ? 's' : '' }}</strong>
+        activo{{ bellCount > 1 ? 's' : '' }} para Luna
       </span>
       <div class="notif-list">
         <span
-          *ngFor="let n of notifications"
+          *ngFor="let n of reminderNotifications"
           class="notif-chip"
           [class.notif-urgent]="n.urgency === 'urgent'"
         >
@@ -82,14 +84,25 @@
         </span>
       </div>
     </div>
+
+    <div *ngIf="bellOpen" class="notif-panel">
+      <div *ngFor="let n of reminderNotifications" class="notif-panel-item">
+        <div class="notif-panel-main">
+          <span class="notif-panel-icon">{{ n.icon }}</span>
+          <div>
+            <div class="notif-panel-title">{{ n.careType }}</div>
+            <div class="notif-panel-date">{{ formatDate(n.date) }}</div>
+          </div>
+        </div>
+        <span class="notif-chip" [class.notif-urgent]="n.urgency === 'urgent'">
+          {{ n.daysLeft === 0 ? 'Hoy' : (n.daysLeft === 1 ? 'Mañana' : n.daysLeft + ' días') }}
+        </span>
+      </div>
+    </div>
   </div>
 </div>
 
-<<<<<<< HEAD
-<!--CONTENIDO PRINCIPAL -->
-=======
 <!-- ═══════════════════════════════════════════════════════════ CONTENIDO PRINCIPAL -->
->>>>>>> 7d5c9fb (feat: add Veterinario component with health management features for pets)
 <section class="vet-content">
   <div class="pastel-blob pb-1"></div>
   <div class="pastel-blob pb-2"></div>
@@ -229,11 +242,7 @@
   </div>
 </section>
 
-<<<<<<< HEAD
-<!-- FOOTER -->
-=======
 <!-- ═════════════════════════════════════════════════════════════════ FOOTER -->
->>>>>>> 7d5c9fb (feat: add Veterinario component with health management features for pets)
 <footer class="cartoon-footer">
   <div class="container">
     <div class="footer-content">
@@ -244,21 +253,13 @@
   </div>
 </footer>
 
-<<<<<<< HEAD
-<!-- BOTÓN FLOTANTE AGENTE -->
-=======
 <!-- ══════════════════════════════════════════════════ BOTÓN FLOTANTE AGENTE -->
->>>>>>> 7d5c9fb (feat: add Veterinario component with health management features for pets)
 <button class="agent-fab" (click)="openAgent()" title="Abrir Agente Veterinario IA">
   <span class="fab-icon">🤖</span>
   <span class="fab-label">Agente IA</span>
 </button>
 
-<<<<<<< HEAD
-<!-- MODAL -->
-=======
 <!-- ═══════════════════════════════════════════════════════════════════ MODAL -->
->>>>>>> 7d5c9fb (feat: add Veterinario component with health management features for pets)
 <div *ngIf="agentOpen" class="modal-overlay" (click)="closeAgent()">
   <div class="agent-modal" (click)="$event.stopPropagation()">
     <!-- Header del modal -->
