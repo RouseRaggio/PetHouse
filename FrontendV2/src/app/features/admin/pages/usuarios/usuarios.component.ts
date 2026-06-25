@@ -1,4 +1,4 @@
-import { Component, OnInit, AfterViewInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, NgZone } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Grid, h } from 'gridjs';
@@ -31,7 +31,10 @@ export class AdminUsuariosComponent implements OnInit, OnDestroy {
     status: 'Activo',
   };
 
-  constructor(private userService: UserService) {}
+  constructor(
+    private userService: UserService,
+    private zone: NgZone,
+  ) {}
 
   async ngOnInit(): Promise<void> {
     await this.loadUsers();
@@ -39,6 +42,18 @@ export class AdminUsuariosComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.grid?.destroy();
+  }
+
+  // ── Stats ─────────────────────────────────────────
+  get adminCount(): number {
+    return this.users.filter((u) => {
+      const label = getUserRoleLabel(u).toLowerCase();
+      return label === 'admin' || label === 'superadmin';
+    }).length;
+  }
+
+  get regularCount(): number {
+    return this.users.filter((u) => getUserRoleLabel(u).toLowerCase() === 'usuario').length;
   }
 
   // ── Password validation ───────────────────────────
@@ -102,7 +117,7 @@ export class AdminUsuariosComponent implements OnInit, OnDestroy {
                 'button',
                 {
                   className: 'btn btn-sm btn-warning me-1',
-                  onClick: () => this.startEdit(user),
+                  onClick: () => this.zone.run(() => this.startEdit(user)),
                 },
                 'Editar',
               ),
@@ -110,7 +125,7 @@ export class AdminUsuariosComponent implements OnInit, OnDestroy {
                 'button',
                 {
                   className: 'btn btn-sm btn-danger',
-                  onClick: () => this.removeUser(user.id),
+                  onClick: () => this.zone.run(() => this.removeUser(user.id)),
                 },
                 'Eliminar',
               ),

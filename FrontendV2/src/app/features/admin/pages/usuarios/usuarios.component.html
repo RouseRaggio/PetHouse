@@ -1,73 +1,162 @@
 <app-admin-navbar />
 
-<section class="container my-4">
-  <div class="d-flex justify-content-between align-items-center mb-4">
-    <h2 class="mb-0">Gestión de Usuarios</h2>
-    <div class="d-flex align-items-center gap-2">
-      <span class="text-muted small">Ordenar por:</span>
-      <select
-        class="form-select form-select-sm w-auto"
-        [(ngModel)]="sortOrder"
-        (change)="renderGrid()"
-      >
-        <option value="recent">Más recientes</option>
-        <option value="alphabetical">Nombre (A-Z)</option>
-      </select>
-    </div>
-  </div>
+<main class="admin-users-page py-5">
+  <div class="container">
+    <!-- ── Page Header ──────────────────────────────────── -->
+    <div
+      class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 gap-3"
+    >
+      <div>
+        <h1 class="fw-bold h2 mb-1">
+          <i class="bi bi-people-fill me-2 text-primary"></i>Gestión de Usuarios
+        </h1>
+        <p class="text-muted mb-0">Administra los usuarios registrados en la plataforma.</p>
+      </div>
 
-  <!-- Formulario -->
-  <div class="card mb-4 p-3">
-    <h5>{{ editUserId ? 'Editar Usuario' : 'Agregar Usuario' }}</h5>
-
-    <div class="row g-2">
-      <div class="col-md-2">
-        <input class="form-control" placeholder="Nombre" [(ngModel)]="newUser.name" />
-      </div>
-      <div class="col-md-2">
-        <input class="form-control" placeholder="Apellido" [(ngModel)]="newUser.last_name" />
-      </div>
-      <div class="col-md-3">
-        <input class="form-control" type="email" placeholder="Correo" [(ngModel)]="newUser.email" />
-      </div>
-      <div class="col-md-2">
-        <input
-          class="form-control"
-          type="password"
-          placeholder="Contraseña"
-          [(ngModel)]="newUser.password"
-          (focus)="showPasswordReq = true"
-        />
-      </div>
-      <div class="col-md-2">
-        <select class="form-select" [(ngModel)]="newUser.role">
-          <option>Admin</option>
-          <option>Usuario</option>
-          <option>SUPERADMIN</option>
+      <!-- Sort control -->
+      <div class="d-flex align-items-center gap-2 sort-control">
+        <i class="bi bi-sort-alpha-down text-primary"></i>
+        <select
+          class="form-select form-select-sm border-0 shadow-none w-auto"
+          [(ngModel)]="sortOrder"
+          (change)="renderGrid()"
+        >
+          <option value="recent">Más recientes</option>
+          <option value="alphabetical">Nombre (A-Z)</option>
         </select>
       </div>
     </div>
 
-    <app-password-requirements
-      *ngIf="showPasswordReq && newUser.password"
-      [password]="newUser.password"
-    />
+    <!-- ── Stats chips ──────────────────────────────────── -->
+    <div class="stats-row mb-4">
+      <div class="stat-chip">
+        <span class="stat-icon"><i class="bi bi-people"></i></span>
+        <div>
+          <div class="stat-value">{{ users.length }}</div>
+          <div class="stat-label">Total usuarios</div>
+        </div>
+      </div>
+      <div class="stat-chip">
+        <span class="stat-icon admin"><i class="bi bi-shield-fill"></i></span>
+        <div>
+          <div class="stat-value">{{ adminCount }}</div>
+          <div class="stat-label">Admins</div>
+        </div>
+      </div>
+      <div class="stat-chip">
+        <span class="stat-icon user"><i class="bi bi-person-check"></i></span>
+        <div>
+          <div class="stat-value">{{ regularCount }}</div>
+          <div class="stat-label">Usuarios regulares</div>
+        </div>
+      </div>
+    </div>
 
-    <div class="mt-3">
-      <ng-container *ngIf="editUserId; else addBtn">
-        <button class="btn btn-success me-2 px-4 shadow-sm" (click)="saveEdit()">
-          <i class="bi bi-save me-1"></i> Guardar Cambios
+    <!-- ── Form Card ────────────────────────────────────── -->
+    <div class="form-card mb-4" [class.editing]="editUserId">
+      <div class="form-card-header">
+        <div class="form-card-title">
+          <i class="bi" [ngClass]="editUserId ? 'bi-pencil-square' : 'bi-person-plus-fill'"></i>
+          <span>{{ editUserId ? 'Editando Usuario' : 'Agregar Nuevo Usuario' }}</span>
+        </div>
+        <button
+          *ngIf="editUserId"
+          class="btn-close-edit"
+          (click)="cancelEdit()"
+          title="Cancelar edición"
+        >
+          <i class="bi bi-x-lg"></i>
         </button>
-        <button class="btn btn-light border px-4" (click)="cancelEdit()">Cancelar</button>
-      </ng-container>
-      <ng-template #addBtn>
-        <button class="btn btn-primary px-4 shadow-sm" (click)="addUser()">
-          <i class="bi bi-person-plus-fill me-1"></i> Agregar Usuario
-        </button>
-      </ng-template>
+      </div>
+
+      <div class="form-card-body">
+        <div class="row g-3">
+          <!-- Fila 1: Nombre · Apellido · Rol -->
+          <div class="col-sm-6 col-md-4">
+            <label class="form-label">Nombre</label>
+            <div class="field-wrap">
+              <i class="bi bi-person field-icon"></i>
+              <input class="field-input" placeholder="Nombre" [(ngModel)]="newUser.name" />
+            </div>
+          </div>
+          <div class="col-sm-6 col-md-4">
+            <label class="form-label">Apellido</label>
+            <div class="field-wrap">
+              <i class="bi bi-person field-icon"></i>
+              <input class="field-input" placeholder="Apellido" [(ngModel)]="newUser.last_name" />
+            </div>
+          </div>
+          <div class="col-sm-6 col-md-4">
+            <label class="form-label">Rol</label>
+            <div class="field-wrap">
+              <i class="bi bi-shield field-icon"></i>
+              <select class="field-input field-select" [(ngModel)]="newUser.role">
+                <option>Admin</option>
+                <option>Usuario</option>
+                <option>SUPERADMIN</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Fila 2: Correo · Contraseña -->
+          <div class="col-sm-6 col-md-6">
+            <label class="form-label">Correo electrónico</label>
+            <div class="field-wrap">
+              <i class="bi bi-envelope field-icon"></i>
+              <input
+                class="field-input"
+                type="email"
+                placeholder="correo@ejemplo.com"
+                [(ngModel)]="newUser.email"
+              />
+            </div>
+          </div>
+          <div class="col-sm-6 col-md-6">
+            <label class="form-label">
+              Contraseña
+              <span *ngIf="editUserId" class="badge-optional">opcional</span>
+            </label>
+            <div class="field-wrap">
+              <i class="bi bi-lock field-icon"></i>
+              <input
+                class="field-input"
+                type="password"
+                placeholder="{{ editUserId ? 'Dejar vacío para no cambiar' : 'Contraseña' }}"
+                [(ngModel)]="newUser.password"
+                (focus)="showPasswordReq = true"
+              />
+            </div>
+          </div>
+        </div>
+
+        <app-password-requirements
+          *ngIf="showPasswordReq && newUser.password"
+          [password]="newUser.password"
+        />
+
+        <div class="form-actions mt-3">
+          <ng-container *ngIf="editUserId; else addBtn">
+            <button class="btn-action btn-save" (click)="saveEdit()">
+              <i class="bi bi-save me-1"></i> Guardar Cambios
+            </button>
+            <button class="btn-action btn-cancel" (click)="cancelEdit()">
+              <i class="bi bi-x-circle me-1"></i> Cancelar
+            </button>
+          </ng-container>
+          <ng-template #addBtn>
+            <button class="btn-action btn-add" (click)="addUser()">
+              <i class="bi bi-person-plus-fill me-1"></i> Agregar Usuario
+            </button>
+          </ng-template>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Table Card ───────────────────────────────────── -->
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+      <div class="card-body p-0">
+        <div id="table-wrapper"></div>
+      </div>
     </div>
   </div>
-
-  <!-- DataTable -->
-  <div id="table-wrapper"></div>
-</section>
+</main>

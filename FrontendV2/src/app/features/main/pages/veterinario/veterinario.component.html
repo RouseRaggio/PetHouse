@@ -1,5 +1,38 @@
 <app-navbar />
 
+<!-- ═══════════════════════════════════════════════════ CAMPANA SUPERIOR -->
+<div
+  *ngIf="user && hasActiveReminders"
+  class="notif-top-anchor"
+  [class.sticky-visible]="isBellSticky"
+>
+  <button
+    class="notif-bell-btn"
+    [class.active]="hasUrgentReminders"
+    [class.open]="bellOpen"
+    (click)="toggleBellPanel()"
+    title="Ver recordatorios"
+  >
+    <i class="bi bi-bell-fill"></i>
+    <span class="notif-bell-count">{{ bellCount }}</span>
+  </button>
+
+  <div *ngIf="bellOpen" class="notif-panel notif-top-panel">
+    <div *ngFor="let n of reminderNotifications" class="notif-panel-item">
+      <div class="notif-panel-main">
+        <span class="notif-panel-icon">{{ n.icon }}</span>
+        <div>
+          <div class="notif-panel-title">{{ n.careType }}</div>
+          <div class="notif-panel-date">{{ formatDate(n.date) }}</div>
+        </div>
+      </div>
+      <span class="notif-chip" [class.notif-urgent]="n.urgency === 'urgent'">
+        {{ n.daysLeft === 0 ? 'Hoy' : n.daysLeft === 1 ? 'Mañana' : n.daysLeft + ' días' }}
+      </span>
+    </div>
+  </div>
+</div>
+
 <!-- ══════════════════════════════════════════════════════════════════════ HERO -->
 <section class="vet-hero">
   <div class="paw-pattern hero-paws"></div>
@@ -59,16 +92,6 @@
 <div *ngIf="user && hasActiveReminders" class="notif-bar">
   <div class="container">
     <div class="notif-inner">
-      <button
-        class="notif-bell-btn"
-        [class.active]="hasUrgentReminders"
-        [class.open]="bellOpen"
-        (click)="toggleBellPanel()"
-        title="Ver recordatorios"
-      >
-        <i class="bi bi-bell-fill"></i>
-        <span class="notif-bell-count">{{ bellCount }}</span>
-      </button>
       <span class="notif-lead">
         <span class="notif-dot urgent"></span>
         <strong>{{ bellCount }} recordatorio{{ bellCount > 1 ? 's' : '' }}</strong>
@@ -81,21 +104,6 @@
           [class.notif-urgent]="n.urgency === 'urgent'"
         >
           {{ n.icon }} {{ n.message }}
-        </span>
-      </div>
-    </div>
-
-    <div *ngIf="bellOpen" class="notif-panel">
-      <div *ngFor="let n of reminderNotifications" class="notif-panel-item">
-        <div class="notif-panel-main">
-          <span class="notif-panel-icon">{{ n.icon }}</span>
-          <div>
-            <div class="notif-panel-title">{{ n.careType }}</div>
-            <div class="notif-panel-date">{{ formatDate(n.date) }}</div>
-          </div>
-        </div>
-        <span class="notif-chip" [class.notif-urgent]="n.urgency === 'urgent'">
-          {{ n.daysLeft === 0 ? 'Hoy' : (n.daysLeft === 1 ? 'Mañana' : n.daysLeft + ' días') }}
         </span>
       </div>
     </div>

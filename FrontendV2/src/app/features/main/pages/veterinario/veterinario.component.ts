@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, HostListener, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Subscription } from 'rxjs';
@@ -46,6 +46,7 @@ export class VeterinarioComponent implements OnInit, OnDestroy {
   user: any = null;
   agentOpen = false;
   bellOpen = false;
+  isBellSticky = false;
   chatInput = '';
   chatMessages: ChatMessage[] = [];
   private readonly notificationWindowDays = 7;
@@ -153,6 +154,26 @@ export class VeterinarioComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.authSub.unsubscribe();
+  }
+
+  @HostListener('window:scroll')
+  onWindowScroll(): void {
+    this.isBellSticky = window.scrollY > 120;
+  }
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent): void {
+    if (!this.bellOpen) return;
+
+    const target = event.target;
+    if (!(target instanceof Element) || !target.closest('.notif-top-anchor')) {
+      this.bellOpen = false;
+    }
+  }
+
+  @HostListener('document:keydown.escape')
+  onEscapePress(): void {
+    this.bellOpen = false;
   }
 
   get urgentCount(): number {

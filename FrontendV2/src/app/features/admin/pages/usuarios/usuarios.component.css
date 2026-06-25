@@ -1,0 +1,350 @@
+@import 'gridjs/dist/theme/mermaid.css';
+
+/* ── Page Layout ─────────────────────────────────── */
+.admin-users-page {
+  background: #f4f6fb;
+  min-height: 100vh;
+}
+
+/* ── Sort control ────────────────────────────────── */
+.sort-control {
+  background: #fff;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.75rem;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+}
+
+/* ── Stats row ───────────────────────────────────── */
+.stats-row {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.stat-chip {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 1rem;
+  padding: 0.75rem 1.25rem;
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.06);
+  flex: 1;
+  min-width: 140px;
+  max-width: 240px;
+}
+
+.stat-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: #eef2ff;
+  color: #4f46e5;
+  font-size: 1.2rem;
+  flex-shrink: 0;
+}
+
+.stat-icon.admin {
+  background: #fef3c7;
+  color: #d97706;
+}
+
+.stat-icon.user {
+  background: #dcfce7;
+  color: #16a34a;
+}
+
+.stat-value {
+  font-size: 1.4rem;
+  font-weight: 700;
+  line-height: 1;
+  color: #1e293b;
+}
+
+.stat-label {
+  font-size: 0.75rem;
+  color: #64748b;
+  margin-top: 2px;
+}
+
+/* ── Form Card ───────────────────────────────────── */
+.form-card {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 1rem;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+  transition:
+    box-shadow 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.form-card.editing {
+  border-color: #6366f1;
+  box-shadow:
+    0 0 0 3px rgba(99, 102, 241, 0.1),
+    0 4px 16px rgba(0, 0, 0, 0.08);
+}
+
+.form-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.5rem;
+  background: linear-gradient(135deg, #f8faff 0%, #eef2ff 100%);
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.form-card.editing .form-card-header {
+  background: linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%);
+  border-bottom-color: #c7d2fe;
+}
+
+.form-card-title {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-weight: 600;
+  font-size: 1rem;
+  color: #1e293b;
+}
+
+.form-card-title i {
+  font-size: 1.1rem;
+  color: #6366f1;
+}
+
+.btn-close-edit {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: rgba(99, 102, 241, 0.1);
+  color: #6366f1;
+  border-radius: 50%;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+  font-size: 0.85rem;
+}
+
+.btn-close-edit:hover {
+  background: #6366f1;
+  color: #fff;
+}
+
+.form-card-body {
+  padding: 1.25rem 1.5rem;
+}
+
+.form-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #475569;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 0.35rem;
+}
+
+.badge-optional {
+  font-size: 0.65rem;
+  font-weight: 500;
+  text-transform: none;
+  letter-spacing: 0;
+  background: #e2e8f0;
+  color: #64748b;
+  border-radius: 999px;
+  padding: 0.1em 0.5em;
+  vertical-align: middle;
+  margin-left: 0.3rem;
+}
+
+/* ── Field wrap (icon + input) ───────────────────── */
+.field-wrap {
+  position: relative;
+}
+
+.field-icon {
+  position: absolute;
+  left: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #6366f1;
+  font-size: 0.95rem;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.field-input {
+  display: block;
+  width: 100%;
+  padding: 0.55rem 0.75rem 0.55rem 2.2rem;
+  font-size: 0.9rem;
+  font-family: inherit;
+  color: #1e293b;
+  background-color: #fff;
+  border: 1.5px solid #d1d5db;
+  border-radius: 0.5rem;
+  outline: none;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.field-input::placeholder {
+  color: #94a3b8;
+}
+
+.field-input:focus {
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12);
+}
+
+.field-select {
+  cursor: pointer;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 16 16'%3E%3Cpath fill='%236366f1' d='M7.247 11.14L2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  padding-right: 2rem;
+}
+
+.field-wrap:focus-within .field-icon {
+  color: #4f46e5;
+}
+
+/* ── Action Buttons ──────────────────────────────── */
+.form-actions {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.btn-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  border: none;
+  border-radius: 0.6rem;
+  padding: 0.55rem 1.4rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease,
+    opacity 0.15s ease;
+}
+
+.btn-action:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+
+.btn-action:active {
+  transform: translateY(0);
+}
+
+.btn-add {
+  background: linear-gradient(135deg, #4f46e5, #6366f1);
+  color: #fff;
+}
+
+.btn-save {
+  background: linear-gradient(135deg, #059669, #10b981);
+  color: #fff;
+}
+
+.btn-cancel {
+  background: #f1f5f9;
+  color: #475569;
+  border: 1px solid #e2e8f0;
+}
+
+.btn-cancel:hover {
+  background: #e2e8f0;
+  box-shadow: none;
+}
+
+/* ── Gridjs overrides ────────────────────────────── */
+:host ::ng-deep .gridjs-container {
+  border-radius: 0 !important;
+  padding: 0 !important;
+}
+
+:host ::ng-deep .gridjs-wrapper {
+  border: none !important;
+  box-shadow: none !important;
+}
+
+:host ::ng-deep .gridjs-th {
+  background-color: #f8fafc !important;
+  color: #475569 !important;
+  text-transform: uppercase !important;
+  font-size: 0.72rem !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.08em !important;
+  padding: 14px 16px !important;
+  border-bottom: 2px solid #e2e8f0 !important;
+}
+
+:host ::ng-deep .gridjs-td {
+  padding: 13px 16px !important;
+  vertical-align: middle !important;
+  font-size: 0.88rem !important;
+  color: #1e293b !important;
+  border-bottom: 1px solid #f1f5f9 !important;
+}
+
+:host ::ng-deep .gridjs-tr:hover .gridjs-td {
+  background-color: #f8faff !important;
+}
+
+:host ::ng-deep .gridjs-search input {
+  border-radius: 0.6rem !important;
+  border-color: #e2e8f0 !important;
+  font-size: 0.88rem !important;
+  padding: 0.5rem 1rem !important;
+}
+
+:host ::ng-deep .gridjs-search input:focus {
+  border-color: #6366f1 !important;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1) !important;
+  outline: none !important;
+}
+
+:host ::ng-deep .gridjs-pagination {
+  padding: 0.75rem 1rem !important;
+  border-top: 1px solid #f1f5f9 !important;
+}
+
+:host ::ng-deep .gridjs-pagination .gridjs-pages button {
+  border-radius: 0.4rem !important;
+  border-color: #e2e8f0 !important;
+  font-size: 0.82rem !important;
+}
+
+:host ::ng-deep .gridjs-pagination .gridjs-pages button.gridjs-currentPage {
+  background: #6366f1 !important;
+  color: #fff !important;
+  border-color: #6366f1 !important;
+}
+
+/* ── Responsive ──────────────────────────────────── */
+@media (max-width: 576px) {
+  .stat-chip {
+    max-width: 100%;
+  }
+  .form-card-body {
+    padding: 1rem;
+  }
+}

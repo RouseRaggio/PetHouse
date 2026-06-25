@@ -324,7 +324,71 @@
   height: 55px;
 }
 
-/* ══════════════════════════════════════════════ BARRA NOTIFICACIONES */
+/* ═════════════════════════════════════════ CAMPANA SUPERIOR FIJA */
+.notif-top-anchor {
+  position: absolute;
+  top: 132px;
+  right: 1.2rem;
+  z-index: 1150;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.65rem;
+  transition:
+    top 0.2s ease,
+    transform 0.2s ease,
+    opacity 0.2s ease;
+}
+
+.notif-top-anchor.sticky-visible {
+  position: fixed;
+  top: 84px;
+  transform: translateY(0);
+}
+
+.notif-top-anchor .notif-bell-btn {
+  width: 52px;
+  height: 52px;
+  background: var(--ink);
+  border: 2px solid #fff;
+  box-shadow: 0 6px 18px rgba(26, 26, 46, 0.28);
+}
+
+.notif-top-anchor .notif-bell-btn:hover,
+.notif-top-anchor .notif-bell-btn.open {
+  background: #2a2a43;
+}
+
+.notif-top-panel {
+  width: min(360px, calc(100vw - 2rem));
+  margin-top: 0;
+  background: #1a1a2e;
+  border-color: #ffffff;
+  box-shadow: 0 14px 28px rgba(26, 26, 46, 0.38);
+}
+
+.notif-top-panel .notif-panel-item {
+  background: #2a2a43;
+  border-color: #5f5f84;
+}
+
+.notif-top-panel .notif-panel-date {
+  color: rgba(255, 255, 255, 0.88);
+}
+
+.notif-top-panel .notif-chip {
+  background: #34345a;
+  color: #ffffff;
+  border-color: #6f6f98;
+}
+
+.notif-top-panel .notif-chip.notif-urgent {
+  background: #8a2f3f;
+  border-color: #ff6b6b;
+  color: #ffd1d1;
+}
+
+/* BARRA NOTIFICACIONES */
 .notif-bar {
   background: var(--ink);
   padding: 0.9rem 0;
@@ -350,7 +414,9 @@
   position: relative;
   font-size: 1.1rem;
   cursor: pointer;
-  transition: transform 0.2s var(--bounce), background 0.2s ease;
+  transition:
+    transform 0.2s var(--bounce),
+    background 0.2s ease;
 }
 .notif-bell-btn:hover {
   transform: translateY(-2px);
@@ -922,9 +988,6 @@
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(26, 26, 46, 0.48);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
   display: flex;
   align-items: flex-end;
   justify-content: flex-end;
@@ -933,7 +996,6 @@
 }
 
 .agent-modal {
-  background: var(--cream);
   border: var(--border-thick);
   border-radius: var(--radius-blob);
   box-shadow: var(--shadow-cartoon-lg);
@@ -1177,6 +1239,20 @@
 }
 
 @media (max-width: 576px) {
+  .notif-top-anchor {
+    top: 122px;
+    right: 0.8rem;
+  }
+  .notif-top-anchor.sticky-visible {
+    top: 76px;
+  }
+  .notif-top-anchor .notif-bell-btn {
+    width: 48px;
+    height: 48px;
+  }
+  .notif-top-panel {
+    width: min(320px, calc(100vw - 1.2rem));
+  }
   .vet-hero {
     padding: 5rem 0 0;
   }
