@@ -833,7 +833,11 @@
   align-items: flex-end;
   justify-content: flex-end;
   padding: 1.5rem;
+<<<<<<< HEAD
   z-index: 12000;
+=======
+  z-index: 1000;
+>>>>>>> 7d5c9fb (feat: add Veterinario component with health management features for pets)
 }
 
 .agent-modal {
