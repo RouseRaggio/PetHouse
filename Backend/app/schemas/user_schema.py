@@ -36,8 +36,6 @@ class UserUpdate(BaseModel):
     email: Optional[EmailStr] = None
     password: Optional[str] = None
     is_active: Optional[bool] = None
-    gps_status: Optional[str] = None
-    gps_imei: Optional[str] = None
 
     @field_validator('password')
     def validate_password(cls, v):
@@ -68,8 +66,6 @@ class UserResponse(BaseModel):
     last_name: str
     email: EmailStr
     is_active: bool
-    gps_status: str
-    gps_imei: Optional[str] = None
     created_at: Optional[datetime]
 
     class Config:

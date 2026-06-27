@@ -32,8 +32,6 @@ class PetUpdate(BaseModel):
     description: Optional[str] = None
     image_url: Optional[str] = None
     status: Optional[str] = None
-    gps_status: Optional[str] = None
-    gps_imei: Optional[str] = None
     modalidad: Optional[str] = None
     telefono_contacto: Optional[str] = None
 
@@ -53,8 +51,6 @@ class PetResponse(BaseModel):
     description: Optional[str]
     image_url: Optional[str]
     status: Optional[str]
-    gps_status: Optional[str] = "none"
-    gps_imei: Optional[str] = None
     modalidad: Optional[str] = "sede"
     telefono_contacto: Optional[str] = None
     adopter_name: Optional[str] = None

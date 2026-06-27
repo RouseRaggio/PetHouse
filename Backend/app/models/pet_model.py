@@ -18,8 +18,6 @@ class Pet(Base):
     image_url = Column(String)
     image_data = Column(LargeBinary)
     status = Column(String)
-    gps_status = Column(String, default="none") # "none", "pending", "approved"
-    gps_imei = Column(String, nullable=True)
     modalidad = Column(String, default="sede")  # "sede" o "hogar"
     telefono_contacto = Column(String, nullable=True)
 
@@ -28,4 +26,3 @@ class Pet(Base):
 
     publisher = relationship("User", back_populates="pets")
     adoptions = relationship("Adoption", back_populates="pet")
-    tracker = relationship("Tracker", back_populates="pet", uselist=False)

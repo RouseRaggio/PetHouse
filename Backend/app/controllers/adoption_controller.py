@@ -47,13 +47,9 @@ def create_adoption(db: Session, data, user_id: int):
         pet_id=data.pet_id,
         adoptante_id=user_id,
         status_id=1,  # PENDING
-        quiere_tracker=data.quiere_tracker,
         cedula_url=data.cedula_url,
         recibo_url=data.recibo_url
     )
-
-    if data.quiere_tracker:
-        pet.gps_status = "pending"
 
     db.add(adoption)
     db.add(pet)

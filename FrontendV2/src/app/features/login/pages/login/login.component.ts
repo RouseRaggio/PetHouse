@@ -69,7 +69,7 @@ export class LoginComponent implements OnInit {
       lower: /[a-z]/.test(this.password),
       number: /\d/.test(this.password),
       special: /[!@#$%^&*(),.?":{}|<>]/.test(this.password),
-    };
+    };  
   }
 
   get isPasswordValid(): boolean {

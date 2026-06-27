@@ -24,8 +24,6 @@ def serialize_user(user: User) -> UserResponse:
         last_name=user.last_name,
         email=user.email,
         is_active=user.is_active,
-        gps_status=user.gps_status,
-        gps_imei=user.gps_imei,
         created_at=user.created_at,
     )
 
@@ -167,13 +165,6 @@ def update_user(db: Session, user_id: int, data: UserUpdate):
     except Exception as e:
         print(f"Audit logging error: {e}")
 
-    # Envío de correo real si el GPS es aprobado O si se actualiza el IMEI de un usuario ya aprobado
-    is_becoming_approved = ("gps_status" in update_data and update_data["gps_status"] == "approved")
-    is_updating_imei = ("gps_imei" in update_data and user.gps_status == "approved")
-
-    if is_becoming_approved or is_updating_imei:
-        print(f"--- Iniciando proceso de envío de correo a {user.email} ---")
-        send_gps_email(user.email, user.name, user.gps_imei)
 
     return serialize_user(user)
 

@@ -18,7 +18,6 @@ class Adoption(Base):
     cedula_url = Column(String)
     recibo_url = Column(String)
 
-    quiere_tracker = Column(Boolean, default=False)
     deleted_at = Column(DateTime, nullable=True)
 
     pet = relationship("Pet", back_populates="adoptions")

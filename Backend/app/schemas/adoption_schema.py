@@ -40,7 +40,6 @@ class StatusNested(BaseModel):
 
 class AdoptionCreate(BaseModel):
     pet_id: int
-    quiere_tracker: Optional[bool] = False
     cedula_url: Optional[str] = None
     recibo_url: Optional[str] = None
 
@@ -61,7 +60,6 @@ class AdoptionResponse(BaseModel):
     id: int
     fecha_solicitud: datetime
     fecha_respuesta: Optional[datetime]
-    quiere_tracker: bool
     cedula_url: Optional[str]
     recibo_url: Optional[str]
 

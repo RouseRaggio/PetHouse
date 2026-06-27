@@ -19,8 +19,6 @@ from app.routes.role_routes import router as role_router
 from app.routes.adoption_status_routes import router as adoption_status_router
 from app.routes.role_permission_routes import router as role_permission_router
 from app.routes.permission_routes import router as permission_router
-from app.routes.tracker_routes import router as tracker_router
-from app.routes.tracker_location_routes import router as tracker_location_router
 from app.routes.audit_log_routes import router as audit_log_router
 
 app = FastAPI()
@@ -77,8 +75,6 @@ app.include_router(role_router)
 app.include_router(adoption_status_router)
 app.include_router(role_permission_router)
 app.include_router(permission_router)
-app.include_router(tracker_router)
-app.include_router(tracker_location_router)
 app.include_router(audit_log_router)
 
 

@@ -18,8 +18,6 @@ class User(Base):
     deleted_at = Column(DateTime, nullable=True)
 
     is_active = Column(Boolean, default=True)
-    gps_status = Column(String, default="none") # "none", "pending", "approved"
-    gps_imei = Column(String, nullable=True)
 
     role = relationship("Role", back_populates="users")
     pets = relationship("Pet", back_populates="publisher")
