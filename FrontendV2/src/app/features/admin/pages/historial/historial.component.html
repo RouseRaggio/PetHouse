@@ -21,7 +21,7 @@
     <!-- Filtros -->
     <div class="card filter-card mb-4 p-4 shadow-sm">
       <div class="row g-3">
-        <div class="col-md-3">
+        <div class="col-12 col-md-3">
           <label class="cartoon-label">Acción</label>
           <select class="form-select cartoon-input" [(ngModel)]="filterAction">
             <option value="">Todas las acciones</option>
@@ -29,9 +29,10 @@
             <option value="update">Actualizar</option>
             <option value="delete">Eliminar</option>
             <option value="login">Inicio Sesión</option>
+            <option value="login_failed">Login fallido</option>
           </select>
         </div>
-        <div class="col-md-3">
+        <div class="col-12 col-md-3">
           <label class="cartoon-label">Recurso</label>
           <select class="form-select cartoon-input" [(ngModel)]="filterResource">
             <option value="">Todos los recursos</option>
@@ -40,7 +41,16 @@
             <option value="adoption">Adopciones</option>
           </select>
         </div>
-        <div class="col-md-4">
+        <div class="col-12 col-md-3">
+          <label class="cartoon-label">Usuario</label>
+          <select class="form-select cartoon-input" [(ngModel)]="filterUser">
+            <option value="">Todos los usuarios</option>
+            <option *ngFor="let user of users" [value]="user.id">
+              {{ user.name }} {{ user.last_name || '' }}
+            </option>
+          </select>
+        </div>
+        <div class="col-12 col-md-3">
           <label class="cartoon-label">Rango de Fechas</label>
           <div class="input-group">
             <input type="date" class="form-control cartoon-input" [(ngModel)]="startDate" />
@@ -48,13 +58,25 @@
             <input type="date" class="form-control cartoon-input" [(ngModel)]="endDate" />
           </div>
         </div>
-        <div class="col-md-2 d-flex align-items-end gap-2">
-          <button class="btn btn-search w-100" (click)="fetchAuditLogs()">
-            <i class="bi bi-search"></i>
-          </button>
-          <button class="btn btn-outline-secondary rounded-pill" (click)="resetFilters()">
-            <i class="bi bi-arrow-counterclockwise"></i>
-          </button>
+        <div class="col-12 d-flex flex-wrap align-items-end justify-content-between gap-2 mt-2">
+          <div class="d-flex align-items-center gap-2">
+            <label class="cartoon-label mb-0">Registros por página</label>
+            <select
+              class="form-select cartoon-input page-size-select"
+              [(ngModel)]="pageSize"
+              (change)="changePageSize()"
+            >
+              <option *ngFor="let size of pageSizeOptions" [value]="size">{{ size }}</option>
+            </select>
+          </div>
+          <div class="d-flex align-items-center gap-2">
+            <button class="btn btn-search" (click)="onFiltersSubmit()">
+              <i class="bi bi-search me-1"></i> Filtrar
+            </button>
+            <button class="btn btn-outline-secondary rounded-pill" (click)="resetFilters()">
+              <i class="bi bi-arrow-counterclockwise me-1"></i> Limpiar
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -64,7 +86,7 @@
       <input
         type="text"
         class="form-control form-control-lg cartoon-input ps-4"
-        placeholder="🔍 Buscar por detalles, recurso o usuario..."
+        placeholder="🔍 Buscar por acción, recurso, estado, usuario o detalles..."
         [(ngModel)]="searchTerm"
         (input)="applySearch()"
       />
@@ -141,6 +163,29 @@
             </tr>
           </tbody>
         </table>
+      </div>
+      <div
+        class="history-footer d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-2 p-3"
+      >
+        <div class="text-muted small">
+          Página {{ currentPage }} · Mostrando {{ filteredLogs.length }} registros
+        </div>
+        <div class="d-flex align-items-center gap-2">
+          <button
+            class="btn btn-outline-dark btn-sm"
+            [disabled]="currentPage <= 1 || loading"
+            (click)="goToPreviousPage()"
+          >
+            <i class="bi bi-chevron-left"></i> Anterior
+          </button>
+          <button
+            class="btn btn-outline-dark btn-sm"
+            [disabled]="!hasNextPage || loading"
+            (click)="goToNextPage()"
+          >
+            Siguiente <i class="bi bi-chevron-right"></i>
+          </button>
+        </div>
       </div>
     </div>
   </div>

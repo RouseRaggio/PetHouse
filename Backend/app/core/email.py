@@ -6,57 +6,6 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-
-def send_gps_email(user_email, user_name, imei):
-    """
-    Envía un correo electrónico al usuario notificando el envío del GPS.
-    """
-    smtp_server = os.getenv("SMTP_SERVER", "smtp.gmail.com")
-    smtp_port = int(os.getenv("SMTP_PORT", "587"))
-    smtp_user = os.getenv("SMTP_USER")
-    smtp_password = os.getenv("SMTP_PASSWORD")
-
-    if not smtp_user or not smtp_password:
-        print("--- AVISO: No se enviará correo real (Faltan credenciales en .env) ---")
-        return False
-
-    msg = MIMEMultipart()
-    msg['From'] = smtp_user
-    msg['To'] = user_email
-    msg['Subject'] = "¡Tu Rastreador GPS de PetHouse ha sido enviado!"
-
-    body = f"""Hola {user_name},
-
-¡Tenemos excelentes noticias! Tu solicitud de rastreador GPS ha sido aprobada y el dispositivo ya va en camino.
-
-DETALLES DE TU DISPOSITIVO:
-- IMEI: {imei}
-
-¿CÓMO RASTREAR?
-1. Inicia sesión en PetHouse.
-2. Ve a la sección 'Rastreador'.
-3. Ingresa el número de IMEI en la plataforma integrada.
-
-Si tienes alguna duda, responde a este correo.
-
-Atentamente,
-El equipo de PetHouse
-"""
-    msg.attach(MIMEText(body, 'plain'))
-
-    try:
-        server = smtplib.SMTP(smtp_server, smtp_port)
-        server.starttls()
-        server.login(smtp_user, smtp_password)
-        server.sendmail(smtp_user, user_email, msg.as_string())
-        server.quit()
-        print(f"--- Correo GPS enviado a {user_email} ---")
-        return True
-    except Exception as e:
-        print(f"!!! ERROR CRÍTICO ENVIANDO CORREO: {type(e).__name__}: {e}")
-        return False
-
-
 def send_adoption_approval_email(user_email, user_name, pet_name):
     """
     Envía un correo electrónico al usuario notificando la aprobación de su adopción.
@@ -101,7 +50,7 @@ def send_adoption_approval_email(user_email, user_name, pet_name):
     msg.attach(MIMEText(body, 'plain'))
 
     try:
-        server = smtplib.SMTP(smtp_server, smtp_port)
+        server = smtplib.SMTP(smtp_server, smtp_port, timeout=10)
         server.starttls()
         server.login(smtp_user, smtp_password)
         text = msg.as_string()
@@ -134,7 +83,7 @@ def _send(to_email: str, subject: str, body: str) -> bool:
     msg['Subject'] = subject
     msg.attach(MIMEText(body, 'plain'))
     try:
-        server = smtplib.SMTP(smtp_server, smtp_port)
+        server = smtplib.SMTP(smtp_server, smtp_port, timeout=10)
         server.starttls()
         server.login(smtp_user, smtp_password)
         server.sendmail(smtp_user, to_email, msg.as_string())
@@ -227,3 +176,25 @@ El equipo de PetHouse
 """
     return _send(user_email, subject, body)
 
+
+def send_adoption_request_email(user_email: str, user_name: str, pet_name: str) -> bool:
+    subject = f"¡Solicitud de adopción recibida para {pet_name}!"
+    body = f"""Hola {user_name},
+
+Hemos recibido tu solicitud de adopción para {pet_name}. 🐾
+
+Nuestro equipo revisará tu documentación y te notificará por correo electrónico en cuanto tengamos una respuesta.
+
+¿QUÉ SIGUE?
+1. Nuestro equipo revisará tu cédula y recibo de servicios.
+2. Recibirás un correo con la decisión (aprobada o rechazada).
+3. Si es aprobada, te indicaremos los pasos para recoger a {pet_name}.
+
+Si tienes alguna duda, responde a este correo.
+
+Gracias por considerar adoptar y darle un hogar a quien lo necesita.
+
+Atentamente,
+El equipo de PetHouse
+"""
+    return _send(user_email, subject, body)

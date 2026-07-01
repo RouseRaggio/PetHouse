@@ -16,7 +16,7 @@ export class AuditService {
   async getAuditLogs(params: any = {}): Promise<any[]> {
     const query = new URLSearchParams(params).toString();
     const data = await firstValueFrom(
-      this.http.get<any>(`${this.apiUrl}/audit/?${query}`, {
+      this.http.get<any>(`${this.apiUrl}/audit-logs/?${query}`, {
         headers: this.getHeaders(),
       }),
     );
@@ -34,7 +34,7 @@ export class AuditService {
   async exportAuditLogsCSV(params: any = {}): Promise<{ content: string; filename: string }> {
     const query = new URLSearchParams(params).toString();
     return firstValueFrom(
-      this.http.get<any>(`${this.apiUrl}/audit/export?${query}`, {
+      this.http.get<any>(`${this.apiUrl}/audit-logs/export/csv?${query}`, {
         headers: this.getHeaders(),
       }),
     );

@@ -4,6 +4,10 @@
   font-family: var(--font-body);
 }
 
+.history-page .container {
+  max-width: 1220px;
+}
+
 .history-badge {
   background: var(--mustard);
   color: var(--ink);
@@ -35,6 +39,10 @@
   border-radius: 12px !important;
   font-weight: 600;
   font-size: 0.9rem;
+}
+
+.page-size-select {
+  width: 100px;
 }
 
 .btn-search {
@@ -75,6 +83,11 @@
   letter-spacing: 1px;
   border: none;
   padding: 15px;
+  white-space: nowrap;
+}
+
+.table-responsive {
+  border-top: 3px solid var(--ink);
 }
 
 .log-row:hover {
@@ -141,6 +154,11 @@
   transform: scale(1.1);
 }
 
+.history-footer {
+  border-top: 2px dashed rgba(0, 0, 0, 0.15);
+  background: rgba(255, 255, 255, 0.8);
+}
+
 .cartoon-modal {
   border: 4px solid var(--ink);
   border-radius: 30px;
@@ -170,4 +188,19 @@
 }
 .opacity-20 {
   opacity: 0.2;
+}
+
+@media (max-width: 768px) {
+  .btn-search {
+    width: 100%;
+  }
+
+  .page-size-select {
+    width: 90px;
+  }
+
+  .table-ink th,
+  .table td {
+    font-size: 0.8rem;
+  }
 }

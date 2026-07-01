@@ -6,7 +6,7 @@ from io import StringIO
 import csv
 
 from app.db.session import get_db
-from app.schemas.audit_log_schema import AuditLogResponse, AuditLogFilter
+from app.schemas.audit_log_schema import AuditLogResponse
 from app.controllers.audit_log_controller import (
     get_audit_logs,
     get_audit_log_by_id,
@@ -41,16 +41,6 @@ def read_audit_logs(
         offset=offset
     )
     return logs
-
-
-@router.get("/{log_id}", response_model=AuditLogResponse)
-def read_audit_log(
-    log_id: int,
-    db: Session = Depends(get_db),
-    current_admin = Depends(get_current_admin_user)
-):
-    """Get a specific audit log (Admin only)"""
-    return get_audit_log_by_id(db, log_id)
 
 
 @router.get("/user/{user_id}", response_model=List[AuditLogResponse])
@@ -110,3 +100,13 @@ def export_audit_logs_csv(
         "filename": f"audit_logs_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
         "content": output.getvalue()
     }
+
+
+@router.get("/{log_id}", response_model=AuditLogResponse)
+def read_audit_log(
+    log_id: int,
+    db: Session = Depends(get_db),
+    current_admin = Depends(get_current_admin_user)
+):
+    """Get a specific audit log (Admin only)"""
+    return get_audit_log_by_id(db, log_id)

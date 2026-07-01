@@ -10,7 +10,7 @@ class AuditLog(Base):
     id = Column(Integer, primary_key=True)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=True)
     action = Column(String(50), nullable=False)  # "create", "update", "delete", "login", "login_failed"
-    resource = Column(String(50), nullable=False)  # "user", "pet", "adoption", "tracker", etc
+    resource = Column(String(50), nullable=False)  # "user", "pet", "adoption", etc
     resource_id = Column(Integer, nullable=True)  # ID of the affected resource
     
     changes = Column(Text, nullable=True)  # JSON with before/after values

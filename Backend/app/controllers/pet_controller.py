@@ -7,7 +7,7 @@ from app.models.pet_model import Pet
 from app.models.adoption_model import Adoption
 from app.models.user_model import User
 from app.schemas.pet_schema import PetCreate, PetUpdate
-from app.core.email import send_gps_email, send_pet_approval_email, send_pet_rejection_email, send_sede_instructions_email
+from app.core.email import send_pet_approval_email, send_pet_rejection_email, send_sede_instructions_email
 from app.controllers.audit_log_controller import log_action
 
 
@@ -178,10 +178,6 @@ def update_pet(db: Session, pet_id: int, data: PetUpdate):
             Adoption.deleted_at == None
         ).update({"deleted_at": datetime.utcnow()}, synchronize_session=False)
 
-        # Resetear estado GPS
-        pet.gps_status = "none"
-        pet.gps_imei = None
-
         # Notificar al publicador que su mascota fue aprobada
         try:
             publisher = pet.publisher
@@ -198,21 +194,6 @@ def update_pet(db: Session, pet_id: int, data: PetUpdate):
                 send_pet_rejection_email(publisher.email, publisher.name, pet.name)
         except Exception as e:
             print(f"Error enviando correo de rechazo de mascota: {e}")
-
-    # Envío de correo si el GPS es aprobado o se actualiza el IMEI
-    is_becoming_approved = ("gps_status" in update_data and update_data["gps_status"] == "approved")
-    is_updating_imei = ("gps_imei" in update_data and pet.gps_status == "approved")
-
-    if is_becoming_approved or is_updating_imei:
-        # Buscar al adoptante para enviarle el correo
-        adoption = db.query(Adoption).filter(
-            Adoption.pet_id == pet.id,
-            Adoption.deleted_at == None
-        ).order_by(Adoption.fecha_solicitud.desc()).first()
-
-        if adoption and adoption.adoptante:
-            print(f"--- Iniciando proceso de envío de correo GPS a {adoption.adoptante.email} ---")
-            send_gps_email(adoption.adoptante.email, adoption.adoptante.name, pet.gps_imei)
 
     db.commit()
     db.refresh(pet)

@@ -1,21 +1,17 @@
 """
-Seeder de mascotas usando Faker.
+Seeder de mascotas.
 Las mascotas se asignan al admin (role_id=1) para que queden AVAILABLE directamente.
 Ejecutar: python seed_pets.py
 """
 import sys, os
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from faker import Faker
-from faker.providers import date_time
 import random
 from datetime import datetime, timedelta
 from sqlalchemy.orm import Session
 from app.db.session import get_db
 from app.models.pet_model import Pet
 from app.models.user_model import User
-
-fake = Faker('es_CO')
 
 SPECIES = ['perro', 'gato']
 
@@ -115,7 +111,7 @@ def seed_pets(db: Session, count: int = 45):
                 used_names.add(candidate)
                 break
         if not nombre:
-            nombre = f"{species.capitalize()} {fake.first_name()} {created + 1}"
+            nombre = f"{species.capitalize()}-{random.randint(1000, 9999)}-{created + 1}"
 
         pet = Pet(
             publisher_id=admin.id,
@@ -129,7 +125,6 @@ def seed_pets(db: Session, count: int = 45):
             status='AVAILABLE',
             modalidad='sede',
             telefono_contacto=None,
-            gps_status='none',
         )
         db.add(pet)
         created += 1

@@ -69,3 +69,16 @@ class AdoptionResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+# Respuesta ligera para creación (sin las URLs base64)
+class AdoptionCreateResponse(BaseModel):
+    id: int
+    fecha_solicitud: datetime
+
+    pet: PetNested
+    adoptante: UserNested
+    status: StatusNested
+
+    class Config:
+        from_attributes = True

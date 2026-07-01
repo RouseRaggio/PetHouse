@@ -117,25 +117,17 @@ export class AdminAdopcionComponent implements OnInit, OnDestroy {
       return h('span', { className: `badge bg-${map[status] ?? 'secondary'}` }, status);
     };
 
-    const boolBadge = (val: boolean) =>
-      h(
-        'span',
-        { className: `badge bg-${val ? 'primary' : 'light text-dark'}` },
-        val ? 'Sí' : 'No',
-      );
-
     this.grid = new Grid({
       columns: [
         { name: 'Mascota', sort: true },
         { name: 'Adoptante', sort: true },
         { name: 'Correo', sort: true },
-        { name: 'Tracker', sort: false, formatter: (val: boolean) => boolBadge(val) },
         { name: 'Fecha Solicitud', sort: true },
         { name: 'Estado', formatter: (val: string) => statusBadge(val) },
         {
           name: 'Acciones',
           formatter: (_: any, row: any) => {
-            const request = row.cells[6]?.data;
+            const request = row.cells[5]?.data;
             if (!request) return '';
             const pending = this.isPending(request);
 
@@ -185,7 +177,6 @@ export class AdminAdopcionComponent implements OnInit, OnDestroy {
           this.getPetName(r),
           this.getAdoptanteName(r),
           this.getAdoptanteEmail(r),
-          r.quiere_tracker ?? false,
           r.fecha_solicitud ? new Date(r.fecha_solicitud).toLocaleDateString('es-CO') : '—',
           this.getStatusName(r),
           r,

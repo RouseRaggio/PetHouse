@@ -20,6 +20,7 @@ interface ActionBadge {
   styleUrls: ['./historial.component.css'],
 })
 export class AdminHistorialComponent implements OnInit {
+  users: any[] = [];
   auditLogs: any[] = [];
   filteredLogs: any[] = [];
   loading = false;
@@ -38,11 +39,21 @@ export class AdminHistorialComponent implements OnInit {
   currentPage = 1;
   pageSize = 20;
   pageSizeOptions = [20, 50, 100];
+  hasNextPage = false;
 
   constructor(private auditService: AuditService) {}
 
   async ngOnInit(): Promise<void> {
+    await this.loadUsers();
     await this.fetchAuditLogs();
+  }
+
+  async loadUsers(): Promise<void> {
+    try {
+      this.users = await this.auditService.getUsers();
+    } catch {
+      this.users = [];
+    }
   }
 
   async fetchAuditLogs(): Promise<void> {
@@ -57,27 +68,15 @@ export class AdminHistorialComponent implements OnInit {
       if (this.filterResource) params.resource = this.filterResource;
       if (this.filterUser) params.user_id = this.filterUser;
       if (this.startDate) params.start_date = new Date(this.startDate).toISOString();
-      if (this.endDate) params.end_date = new Date(this.endDate).toISOString();
-
-      this.auditLogs = await this.auditService.getAuditLogs(params);
-
-      // Enriquecer con nombres de usuario
-      try {
-        const users = await this.auditService.getUsers();
-        const userMap: Record<number, string> = {};
-        users.forEach((u: any) => {
-          userMap[u.id] = `${u.name} ${u.last_name || ''}`.trim();
-        });
-        this.auditLogs = this.auditLogs.map((l) => ({
-          ...l,
-          user_name: l.user_id ? userMap[l.user_id] || `Usuario #${l.user_id}` : 'Sistema',
-        }));
-      } catch {
-        this.auditLogs = this.auditLogs.map((l) => ({
-          ...l,
-          user_name: l.user_id ? `Usuario #${l.user_id}` : 'Sistema',
-        }));
+      if (this.endDate) {
+        const end = new Date(this.endDate);
+        end.setHours(23, 59, 59, 999);
+        params.end_date = end.toISOString();
       }
+
+      const logs = await this.auditService.getAuditLogs(params);
+      this.auditLogs = this.decorateLogsWithUserName(logs);
+      this.hasNextPage = this.auditLogs.length === this.pageSize;
 
       this.applySearch();
     } catch (error) {
@@ -92,18 +91,63 @@ export class AdminHistorialComponent implements OnInit {
     }
   }
 
+  decorateLogsWithUserName(logs: any[]): any[] {
+    const userMap: Record<number, string> = {};
+    this.users.forEach((u: any) => {
+      userMap[u.id] = `${u.name} ${u.last_name || ''}`.trim();
+    });
+
+    return logs.map((l) => ({
+      ...l,
+      user_name: l.user_id ? userMap[l.user_id] || `Usuario #${l.user_id}` : 'Sistema',
+    }));
+  }
+
   applySearch(): void {
     const term = this.searchTerm.trim().toLowerCase();
     if (!term) {
       this.filteredLogs = this.auditLogs;
       return;
     }
-    this.filteredLogs = this.auditLogs.filter(
-      (log) =>
-        log.action.toLowerCase().includes(term) ||
-        log.resource.toLowerCase().includes(term) ||
-        (log.details && log.details.toLowerCase().includes(term)),
-    );
+    this.filteredLogs = this.auditLogs.filter((log) => {
+      const details = typeof log.details === 'string' ? log.details : '';
+      const userName = (log.user_name || '').toLowerCase();
+      const resourceId = `${log.resource_id ?? ''}`;
+      const status = (log.status || '').toLowerCase();
+      const action = (log.action || '').toLowerCase();
+      const resource = (log.resource || '').toLowerCase();
+
+      return (
+        action.includes(term) ||
+        resource.includes(term) ||
+        details.toLowerCase().includes(term) ||
+        userName.includes(term) ||
+        resourceId.includes(term) ||
+        status.includes(term)
+      );
+    });
+  }
+
+  async onFiltersSubmit(): Promise<void> {
+    this.currentPage = 1;
+    await this.fetchAuditLogs();
+  }
+
+  async changePageSize(): Promise<void> {
+    this.currentPage = 1;
+    await this.fetchAuditLogs();
+  }
+
+  async goToPreviousPage(): Promise<void> {
+    if (this.currentPage <= 1 || this.loading) return;
+    this.currentPage -= 1;
+    await this.fetchAuditLogs();
+  }
+
+  async goToNextPage(): Promise<void> {
+    if (!this.hasNextPage || this.loading) return;
+    this.currentPage += 1;
+    await this.fetchAuditLogs();
   }
 
   async exportToCSV(): Promise<void> {
@@ -179,6 +223,9 @@ export class AdminHistorialComponent implements OnInit {
   }
 
   getDetailsJson(log: any): string {
-    return JSON.stringify(log.changes || log.details, null, 2);
+    const payload = log.changes || log.details;
+    if (!payload) return 'Sin detalles adicionales.';
+    if (typeof payload === 'string') return payload;
+    return JSON.stringify(payload, null, 2);
   }
 }

@@ -75,3 +75,30 @@
   opacity: 0.6;
   cursor: not-allowed;
 }
+
+.modal-backdrop-custom {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1050;
+  padding: 1rem;
+}
+
+.modal-card-custom {
+  width: min(560px, 100%);
+  background: #fff;
+  border: 3px solid var(--ink);
+  border-radius: 20px;
+  box-shadow: var(--shadow-cartoon-lg);
+  padding: 1.5rem;
+  text-align: center;
+}
+
+.modal-icon {
+  font-size: 3.5rem;
+  line-height: 1;
+  margin-bottom: 0.75rem;
+}

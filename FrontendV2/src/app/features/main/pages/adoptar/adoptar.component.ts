@@ -14,6 +14,9 @@ import { formatAge } from '../../../../shared/utils/formatAge';
   styleUrls: ['./adoptar.component.css'],
 })
 export class AdoptarComponent implements OnInit {
+  readonly maxFileSizeMb = 2;
+  readonly allowedMimeTypes = ['application/pdf', 'image/jpeg', 'image/png', 'image/webp'];
+
   pet: any = null;
   loading = true;
   cedulaFile: File | null = null;
@@ -21,6 +24,7 @@ export class AdoptarComponent implements OnInit {
   acceptedTerms = false;
   message = '';
   success = false;
+  showSuccessModal = false;
 
   constructor(
     private route: ActivatedRoute,
@@ -56,12 +60,55 @@ export class AdoptarComponent implements OnInit {
 
   handleCedula(e: Event): void {
     const input = e.target as HTMLInputElement;
-    this.cedulaFile = input.files?.[0] ?? null;
+    const file = input.files?.[0] ?? null;
+    if (!file) {
+      this.cedulaFile = null;
+      return;
+    }
+
+    const error = this.validateSelectedFile(file, 'La cédula');
+    if (error) {
+      this.message = error;
+      this.cedulaFile = null;
+      input.value = '';
+      return;
+    }
+
+    this.message = '';
+    this.cedulaFile = file;
   }
 
   handleRecibo(e: Event): void {
     const input = e.target as HTMLInputElement;
-    this.reciboFile = input.files?.[0] ?? null;
+    const file = input.files?.[0] ?? null;
+    if (!file) {
+      this.reciboFile = null;
+      return;
+    }
+
+    const error = this.validateSelectedFile(file, 'El recibo');
+    if (error) {
+      this.message = error;
+      this.reciboFile = null;
+      input.value = '';
+      return;
+    }
+
+    this.message = '';
+    this.reciboFile = file;
+  }
+
+  private validateSelectedFile(file: File, label: string): string | null {
+    if (!this.allowedMimeTypes.includes(file.type)) {
+      return `${label} debe estar en formato PDF, JPG, PNG o WEBP`;
+    }
+
+    const maxFileSizeBytes = this.maxFileSizeMb * 1024 * 1024;
+    if (file.size > maxFileSizeBytes) {
+      return `${label} supera el tamaño máximo permitido (${this.maxFileSizeMb}MB)`;
+    }
+
+    return null;
   }
 
   async submitSolicitud(): Promise<void> {
@@ -97,19 +144,23 @@ export class AdoptarComponent implements OnInit {
 
       await this.petService.submitAdoption(fd);
 
-      this.message = 'Solicitud enviada correctamente';
       this.success = true;
+      this.showSuccessModal = true;
       this.cedulaFile = null;
       this.reciboFile = null;
       localStorage.removeItem('selectedPet');
-
-      setTimeout(() => this.router.navigate(['/mascotas']), 2000);
     } catch (e: any) {
       this.message = e?.error?.detail || e?.error?.message || 'No se pudo enviar la solicitud';
       this.success = false;
+      this.showSuccessModal = false;
       console.error(e);
     } finally {
       this.loading = false;
     }
+  }
+
+  closeSuccessModalAndGo(): void {
+    this.showSuccessModal = false;
+    this.router.navigate(['/mascotas']);
   }
 }

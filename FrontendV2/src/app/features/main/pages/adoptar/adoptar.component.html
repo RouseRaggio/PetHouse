@@ -1,21 +1,43 @@
 <app-navbar />
 
+<div class="modal-backdrop-custom" *ngIf="showSuccessModal">
+  <div
+    class="modal-card-custom"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="adoption-success-title"
+  >
+    <div class="modal-icon">🐾</div>
+    <h4 id="adoption-success-title" class="fw-bold text-success mb-2">
+      ¡Solicitud enviada exitosamente!
+    </h4>
+    <p class="text-muted mb-2">
+      Tu solicitud de adopción fue recibida. Debes esperar la confirmación por correo electrónico.
+    </p>
+    <p class="small text-muted mb-4">Presiona "Entendido" para volver al catálogo.</p>
+    <button class="btn-publish-cartoon px-4 py-2" (click)="closeSuccessModalAndGo()">
+      Entendido
+    </button>
+  </div>
+</div>
+
 <div class="container mt-5">
   <div class="row justify-content-center">
     <div class="col-md-8">
       <!-- Loading -->
-      <div *ngIf="loading" class="text-center py-5">
+      <div *ngIf="loading && !success" class="text-center py-5">
         <div class="spinner-border text-primary" role="status"></div>
+        <p class="mt-3 text-muted">Enviando solicitud, por favor espera...</p>
       </div>
 
       <!-- Sin mascota -->
-      <div *ngIf="!loading && !pet" class="alert alert-warning text-center">
+      <div *ngIf="!loading && !success && !pet" class="alert alert-warning text-center">
         No se seleccionó ninguna mascota.
         <a routerLink="/" class="alert-link">Volver al catálogo</a>
       </div>
 
       <!-- Formulario -->
-      <div *ngIf="!loading && pet" class="adopt-card p-3">
+      <div *ngIf="!loading && !success && pet" class="adopt-card p-3">
         <div class="card-badge">🐾 SOLICITUD</div>
 
         <div class="card-head text-center mb-3">
@@ -23,13 +45,8 @@
         </div>
 
         <div class="card-body">
-          <!-- Mensaje -->
-          <div
-            *ngIf="message"
-            class="alert"
-            [class.alert-success]="success"
-            [class.alert-danger]="!success"
-          >
+          <!-- Mensaje de error -->
+          <div *ngIf="message && !success" class="alert alert-danger">
             {{ message }}
           </div>
 
@@ -62,6 +79,9 @@
                 accept="image/*,application/pdf"
                 (change)="handleCedula($event)"
               />
+              <small class="text-muted"
+                >Formatos: PDF/JPG/PNG/WEBP. Máximo: {{ maxFileSizeMb }}MB.</small
+              >
             </div>
             <div class="col-md-6 mb-3">
               <label class="form-label cartoon-label" for="recibo">Recibo de servicios *</label>
@@ -72,6 +92,9 @@
                 accept="image/*,application/pdf"
                 (change)="handleRecibo($event)"
               />
+              <small class="text-muted"
+                >Formatos: PDF/JPG/PNG/WEBP. Máximo: {{ maxFileSizeMb }}MB.</small
+              >
             </div>
 
             <!-- Legal -->

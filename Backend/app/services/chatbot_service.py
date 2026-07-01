@@ -36,7 +36,6 @@ class ChatbotService:
             - Es una plataforma donde las personas pueden adoptar mascotas
             - Los dueños publican mascotas disponibles para adopción
             - Los adoptantes pueden ver perfiles de mascotas y contactar a los dueños
-            - Hay un sistema de seguimiento GPS para mascotas adoptadas
             - Priorizamos el bienestar animal y la adopción responsable
 
             Responde en español de forma natural y conversacional.

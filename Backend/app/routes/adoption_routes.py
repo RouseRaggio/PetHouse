@@ -1,5 +1,5 @@
 import base64
-from fastapi import APIRouter, Depends, UploadFile, File, Form
+from fastapi import APIRouter, Depends, UploadFile, File, Form, BackgroundTasks, HTTPException
 from sqlalchemy.orm import Session
 from typing import List, Optional
 
@@ -7,8 +7,10 @@ from app.db.session import get_db
 from app.schemas.adoption_schema import (
     AdoptionCreate,
     AdoptionStatusUpdate,
-    AdoptionResponse
+    AdoptionResponse,
+    AdoptionCreateResponse
 )
+from app.core.email import send_adoption_request_email
 from app.auth.dependencies import get_current_active_user
 from app.controllers.adoption_controller import (
     create_adoption,
@@ -19,6 +21,27 @@ from app.controllers.adoption_controller import (
 )
 
 router = APIRouter(prefix="/adoptions", tags=["Adoptions"])
+MAX_UPLOAD_BYTES = 2 * 1024 * 1024
+ALLOWED_MIME_TYPES = {"application/pdf", "image/jpeg", "image/png", "image/webp"}
+
+
+def _validate_upload_file(file: UploadFile, label: str):
+    mime = (file.content_type or "").lower()
+    if mime not in ALLOWED_MIME_TYPES:
+        raise HTTPException(
+            status_code=400,
+            detail=f"{label}: formato no permitido. Usa PDF, JPG, PNG o WEBP"
+        )
+
+    file.file.seek(0, 2)
+    size = file.file.tell()
+    file.file.seek(0)
+
+    if size > MAX_UPLOAD_BYTES:
+        raise HTTPException(
+            status_code=413,
+            detail=f"{label}: archivo demasiado grande (máximo 2MB)"
+        )
 
 
 def _upload_file_to_data_uri(file: UploadFile):
@@ -29,25 +52,36 @@ def _upload_file_to_data_uri(file: UploadFile):
     
 
 
-@router.post("/", response_model=AdoptionResponse)
+@router.post("/", response_model=AdoptionCreateResponse)
 def create(
+    background_tasks: BackgroundTasks,
     pet_id: int = Form(...),
-    quiere_tracker: bool = Form(False),
     cedula: Optional[UploadFile] = File(None),
     recibo: Optional[UploadFile] = File(None),
     current_user = Depends(get_current_active_user),
     db: Session = Depends(get_db)
 ):
+    if cedula:
+        _validate_upload_file(cedula, "Cédula")
+    if recibo:
+        _validate_upload_file(recibo, "Recibo")
+
     cedula_url = _upload_file_to_data_uri(cedula) if cedula else None
     recibo_url = _upload_file_to_data_uri(recibo) if recibo else None
 
     data = AdoptionCreate(
         pet_id=pet_id,
-        quiere_tracker=quiere_tracker,
         cedula_url=cedula_url,
         recibo_url=recibo_url
     )
-    return create_adoption(db, data, user_id=current_user.id)
+    adoption = create_adoption(db, data, user_id=current_user.id)
+    background_tasks.add_task(
+        send_adoption_request_email,
+        current_user.email,
+        current_user.name,
+        adoption.pet.name
+    )
+    return adoption
 
 
 @router.get("/", response_model=List[AdoptionResponse])

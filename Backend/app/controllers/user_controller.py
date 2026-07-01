@@ -8,7 +8,6 @@ from app.schemas.user_schema import UserCreate, UserUpdate, UserResponse
 from app.core.security import hash_password
 from app.core.security import verify_password
 from app.auth.jwt_handler import create_access_token
-from app.core.email import send_gps_email
 from app.controllers.audit_log_controller import log_action
 import traceback
 import requests
