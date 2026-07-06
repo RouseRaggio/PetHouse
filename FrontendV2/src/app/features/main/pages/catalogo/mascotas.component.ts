@@ -5,7 +5,7 @@ import { RouterModule } from '@angular/router';
 import { NavbarComponent } from '../../../../shared/components/nav-bar/nav-bar';
 import { PetCardComponent } from '../../../../shared/components/pet-card/pet-card';
 import { PetModalComponent } from '../../../../shared/components/pet-modal/pet-modal';
-import { PetService } from '../../../../core/services/pet.service';
+import { PetService } from '../../services/pet.service';
 
 @Component({
   selector: 'app-mascotas',

@@ -21,38 +21,12 @@ export class UserService {
       this.http.post(`${this.apiUrl}/users/google-login`, { id_token: idToken }),
     );
   }
-  async getUsers(): Promise<any[]> {
-    const token = localStorage.getItem('token');
-    const data = await firstValueFrom(
-      this.http.get<any>(`${this.apiUrl}/users/`, {
-        headers: { Authorization: `Bearer ${token}` },
-      }),
-    );
-    return data?.data ?? data;
-  }
 
-  async createUser(userData: any): Promise<any> {
-    const token = localStorage.getItem('token');
-    return firstValueFrom(
-      this.http.post(`${this.apiUrl}/users/`, userData, {
-        headers: { Authorization: `Bearer ${token}` },
-      }),
-    );
-  }
-
+  // El usuario actualiza su propio perfil (ej: aceptar política de datos)
   async updateUser(id: number, userData: any): Promise<any> {
     const token = localStorage.getItem('token');
     return firstValueFrom(
       this.http.put(`${this.apiUrl}/users/${id}`, userData, {
-        headers: { Authorization: `Bearer ${token}` },
-      }),
-    );
-  }
-
-  async deleteUser(id: number): Promise<any> {
-    const token = localStorage.getItem('token');
-    return firstValueFrom(
-      this.http.delete(`${this.apiUrl}/users/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       }),
     );

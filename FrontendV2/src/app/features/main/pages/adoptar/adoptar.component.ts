@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { NavbarComponent } from '../../../../shared/components/nav-bar/nav-bar';
-import { PetService } from '../../../../core/services/pet.service';
+import { PetService } from '../../services/pet.service';
 import { formatAge } from '../../../../shared/utils/formatAge';
 
 @Component({

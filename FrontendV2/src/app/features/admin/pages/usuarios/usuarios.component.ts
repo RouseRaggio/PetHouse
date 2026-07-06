@@ -5,7 +5,7 @@ import { Grid, h } from 'gridjs';
 import Swal from 'sweetalert2';
 import { AdminNavbarComponent } from '../../../../shared/components/admin-navbar/admin-navbar';
 import { PasswordRequirementsComponent } from '../../../../shared/components/password-requirements/password-requirements';
-import { UserService } from '../../../../core/services/user.service';
+import { AdminUserService } from '../../services/admin-user.service';
 import { getUserRoleLabel, roleLabelToId } from '../../../../shared/utils/roles';
 
 @Component({
@@ -32,7 +32,7 @@ export class AdminUsuariosComponent implements OnInit, OnDestroy {
   };
 
   constructor(
-    private userService: UserService,
+    private userService: AdminUserService,
     private zone: NgZone,
   ) {}
 
