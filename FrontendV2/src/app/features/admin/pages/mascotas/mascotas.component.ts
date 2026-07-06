@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Grid, h } from 'gridjs';
 import Swal from 'sweetalert2';
 import { AdminNavbarComponent } from '../../../../shared/components/admin-navbar/admin-navbar';
-import { PetService } from '../../../../core/services/pet.service';
+import { PetService } from '../../../main/services/pet.service';
 
 @Component({
   selector: 'app-admin-mascotas',

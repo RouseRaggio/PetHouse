@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Grid, h } from 'gridjs';
 import Swal from 'sweetalert2';
 import { AdminNavbarComponent } from '../../../../shared/components/admin-navbar/admin-navbar';
-import { AdoptionService } from '../../../../core/services/adoption.service';
+import { AdoptionService } from '../../../main/services/adoption.service';
 
 @Component({
   selector: 'app-admin-adopcion',

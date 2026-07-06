@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import Swal from 'sweetalert2';
 import { AdminNavbarComponent } from '../../../../shared/components/admin-navbar/admin-navbar';
-import { AuditService } from '../../../../core/services/audit.service';
+import { AuditService } from '../../services/audit.service';
 
 interface ActionBadge {
   class: string;

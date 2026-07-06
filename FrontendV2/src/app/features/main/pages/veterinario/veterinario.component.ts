@@ -6,8 +6,8 @@ import { Subscription } from 'rxjs';
 import Swal from 'sweetalert2';
 import { Router, RouterModule } from '@angular/router';
 import { NavbarComponent } from '../../../../shared/components/nav-bar/nav-bar';
-import { AuthService } from '../../../../core/services/auth.service';
-import { PetMedicalCard, PetReminder, PetService } from '../../../../core/services/pet.service';
+import { AuthService } from '../../../auth/services/auth.service';
+import { PetMedicalCard, PetReminder, PetService } from '../../services/pet.service';
 import { VeterinarioChatService } from '../../../../core/services/veterinario-chat.service';
 
 interface UpcomingCare {

@@ -2,7 +2,7 @@ import { Component, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
-import { ChatService } from '../../core/services/chat.service';
+import { ChatService } from './services/chat.service';
 
 @Component({
   selector: 'app-chatbot',

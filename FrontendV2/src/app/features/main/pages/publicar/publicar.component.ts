@@ -4,8 +4,8 @@ import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import Swal from 'sweetalert2';
 import { NavbarComponent } from '../../../../shared/components/nav-bar/nav-bar';
-import { PetService } from '../../../../core/services/pet.service';
-import { AuthService } from '../../../../core/services/auth.service';
+import { PetService } from '../../services/pet.service';
+import { AuthService } from '../../../auth/services/auth.service';
 import { isAdminRole } from '../../../../shared/utils/roles';
 
 @Component({
