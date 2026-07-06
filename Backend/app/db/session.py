@@ -21,14 +21,43 @@ if not DATABASE_URL:
             "?sslmode=require&channel_binding=require"
         )
     else:
-        # Usar SQLite para desarrollo local
         DATABASE_URL = "sqlite:///./pet_house.db"
 
-print("DATABASE_URL:", DATABASE_URL) 
+print("DATABASE_URL:", DATABASE_URL)
 
-engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False} if DATABASE_URL.startswith("sqlite") else {})
+# ===========================
+# Engine
+# ===========================
 
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+if DATABASE_URL.startswith("sqlite"):
+    engine = create_engine(
+        DATABASE_URL,
+        connect_args={"check_same_thread": False},
+    )
+else:
+    engine = create_engine(
+        DATABASE_URL,
+
+        # Verifica que la conexión siga viva
+        pool_pre_ping=True,
+
+        # Recicla conexiones cada 30 minutos
+        pool_recycle=1800,
+
+        # Pool de conexiones
+        pool_size=5,
+        max_overflow=10,
+
+        # Espera máxima antes de lanzar timeout
+        pool_timeout=30,
+    )
+
+SessionLocal = sessionmaker(
+    autocommit=False,
+    autoflush=False,
+    bind=engine
+)
+
 
 def get_db():
     db = SessionLocal()

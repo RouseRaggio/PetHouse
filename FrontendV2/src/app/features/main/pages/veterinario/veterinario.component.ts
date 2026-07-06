@@ -8,6 +8,7 @@ import { Router, RouterModule } from '@angular/router';
 import { NavbarComponent } from '../../../../shared/components/nav-bar/nav-bar';
 import { AuthService } from '../../../../core/services/auth.service';
 import { PetMedicalCard, PetReminder, PetService } from '../../../../core/services/pet.service';
+import { VeterinarioChatService } from '../../../../core/services/veterinario-chat.service';
 
 interface UpcomingCare {
   id: number;
@@ -91,6 +92,7 @@ export class VeterinarioComponent implements OnInit, OnDestroy {
     private petService: PetService,
     private router: Router,
     private cdr: ChangeDetectorRef,
+    private veterinarioChat: VeterinarioChatService,
   ) {}
 
   ngOnInit(): void {
@@ -296,16 +298,57 @@ export class VeterinarioComponent implements OnInit, OnDestroy {
   }
 
   sendMessage(): void {
+
     if (!this.chatInput.trim()) return;
-    this.chatMessages.push({ type: 'user', text: this.chatInput });
+
+    const pregunta = this.chatInput;
+
+    this.chatMessages.push({
+      type: 'user',
+      text: pregunta
+    });
+
     this.chatInput = '';
-    // Placeholder para futura integración con IA
-    setTimeout(() => {
-      this.chatMessages.push({
-        type: 'bot',
-        text: '🔬 Procesando tu consulta... (Integración con IA veterinaria próximamente)',
+
+    // Mensaje temporal mientras responde la IA
+    this.chatMessages.push({
+      type: 'bot',
+      text: '🔬 Analizando la información...'
+    });
+
+    this.veterinarioChat
+      .enviarMensaje(this.selectedPet.id, pregunta)
+      .subscribe({
+
+        next: (resp: any) => {
+
+          // Elimina el mensaje temporal
+          this.chatMessages.pop();
+
+          this.chatMessages.push({
+            type: 'bot',
+            text: resp.respuesta
+          });
+
+          this.cdr.detectChanges();
+
+        },
+
+        error: () => {
+
+          this.chatMessages.pop();
+
+          this.chatMessages.push({
+            type: 'bot',
+            text: '❌ No fue posible comunicarse con el Veterinario IA.'
+          });
+
+          this.cdr.detectChanges();
+
+        }
+
       });
-    }, 800);
+
   }
 
   formatDate(dateStr: string): string {

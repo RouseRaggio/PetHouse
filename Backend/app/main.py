@@ -11,6 +11,7 @@ from app.db.base import Base
 from app.models import *
 
 # ROUTES
+from app.routes.veterinario_chat import router as veterinario_router
 from app.routes.chat import router as chat_router
 from app.routes.user_routes import router as user_router
 from app.routes.pet_routes import router as pet_router
@@ -71,6 +72,7 @@ app.add_middleware(
 # ROUTES
 # ==========================
 
+app.include_router(veterinario_router)
 app.include_router(chat_router)
 app.include_router(user_router)
 app.include_router(pet_router)
