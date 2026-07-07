@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from typing import List
 
 from app.db.session import get_db
-from app.schemas.user_schema import UserCreate, UserUpdate, UserResponse
+from app.schemas.user_schema import UserCreate, UserUpdate, UserResponse, TelegramLinkRequest
 from app.controllers.user_controller import (
     create_user, 
     get_users,
@@ -15,7 +15,7 @@ from app.controllers.user_controller import (
     get_user_by_email,
     login_user,
     login_with_google,
-
+    link_telegram_chat,
 )
 from app.schemas.user_schema import LoginRequest, TokenResponse
 from app.schemas.user_schema import SocialLoginRequest
@@ -99,3 +99,9 @@ def delete(user_id: int, db: Session = Depends(get_db)):
 @router.put("/restore/{user_id}")
 def restore(user_id: int, db: Session = Depends(get_db)):
     return restore_user(db, user_id)
+
+
+# LINK TELEGRAM
+@router.post("/link-telegram", response_model=UserResponse)
+def link_telegram(payload: TelegramLinkRequest, db: Session = Depends(get_db)):
+    return link_telegram_chat(db, payload.user_id, payload.telegram_chat_id)
