@@ -31,10 +31,8 @@ def login(data: LoginRequest, db: Session = Depends(get_db)):
     try:
         return login_user(db, data.email, data.password)
     except HTTPException:
-        # Re-raise known HTTP exceptions (404, 400, etc.) so FastAPI handles them
         raise
     except Exception as e:
-        # Log full traceback for debugging while returning a safe 500 response
         tb = traceback.format_exc()
         print("[ERROR] Exception in /users/login:\n", tb)
         raise HTTPException(status_code=500, detail="Internal server error during login")

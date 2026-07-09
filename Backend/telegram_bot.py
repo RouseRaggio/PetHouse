@@ -2,6 +2,8 @@ import os
 import sys
 import time
 import traceback
+import datetime
+from sqlalchemy import func
 import requests
 from dotenv import load_dotenv
 
@@ -50,6 +52,76 @@ def send_message(chat_id, text):
         requests.post(url, json=payload, timeout=10)
     except Exception as e:
         print(f"[ERROR] No se pudo enviar mensaje a {chat_id}: {e}")
+
+
+def _get_due_reminder_notifications(reminders, now=None):
+    """Devuelve los recordatorios que deben notificarse como hoy o mañana."""
+    if now is None:
+        now = time.time()
+        if isinstance(now, float):
+            now = datetime.datetime.fromtimestamp(now)
+
+    if not hasattr(now, "date"):
+        now = datetime.datetime.fromtimestamp(now)
+
+    today = now.date()
+    tomorrow = today + datetime.timedelta(days=1)
+    due = []
+
+    for reminder in reminders:
+        if not reminder.fecha:
+            continue
+        if (reminder.status or "").lower() == "notificado":
+            continue
+
+        reminder_date = reminder.fecha.date() if hasattr(reminder.fecha, "date") else reminder.fecha
+        if reminder_date == today:
+            due.append((reminder, "hoy"))
+        elif reminder_date == tomorrow:
+            due.append((reminder, "mañana"))
+
+    return due
+
+
+def send_reminder_notifications():
+    """Envía notificaciones de Telegram para recordatorios pendientes de hoy y mañana."""
+    db = SessionLocal()
+    try:
+        reminders = (
+            db.query(PetReminder)
+            .filter(PetReminder.deleted_at == None)
+            .filter((PetReminder.status == None) | (func.lower(PetReminder.status) != "notificado"))
+            .all()
+        )
+
+        now = datetime.datetime.utcnow()
+        due_reminders = _get_due_reminder_notifications(reminders, now=now)
+        for reminder, when in due_reminders:
+            pet = reminder.pet
+            user = db.query(User).filter(User.id == pet.publisher_id, User.deleted_at == None).first()
+            if not user or not user.telegram_chat_id:
+                continue
+
+            fecha_str = reminder.fecha.strftime("%d/%m/%Y") if reminder.fecha else "Sin fecha"
+            message = (
+                f"🔔 Recordatorio de PetHouse\n\n"
+                f"Tu mascota *{pet.name}* tiene un recordatorio para {when}:\n"
+                f"📌 Tipo: *{reminder.type}*\n"
+                f"📅 Fecha: *{fecha_str}*\n"
+            )
+            if reminder.notes:
+                message += f"📝 Notas: *{reminder.notes}*\n"
+            message += "\nCuida a tu mascota con tiempo. 🐾"
+            send_message(user.telegram_chat_id, message)
+            reminder.status = "notificado"
+
+        db.commit()
+    except Exception as e:
+        db.rollback()
+        print(f"[ERROR] Error enviando recordatorios de Telegram: {e}")
+    finally:
+        db.close()
+
 
 def link_user(chat_id, user_id_str):
     """Vincular el telegram_chat_id con el usuario de PetHouse"""
@@ -226,6 +298,11 @@ def main():
     
     offset = 0
     while True:
+        try:
+            send_reminder_notifications()
+        except Exception as e:
+            print(f"[WARNING] No se pudieron enviar recordatorios automáticos: {e}")
+
         try:
             # Consultas a Telegram Bot API (polling) con timeout de 30 segundos
             url = f"{BOT_URL}/getUpdates"
