@@ -71,6 +71,21 @@ class AdoptionResponse(BaseModel):
         from_attributes = True
 
 
+class AdoptionListResponse(BaseModel):
+    id: int
+    fecha_solicitud: datetime
+    fecha_respuesta: Optional[datetime]
+    has_cedula: bool
+    has_recibo: bool
+
+    pet: PetNested
+    adoptante: UserNested
+    status: StatusNested
+
+    class Config:
+        from_attributes = True
+
+
 # Respuesta ligera para creación (sin las URLs base64)
 class AdoptionCreateResponse(BaseModel):
     id: int

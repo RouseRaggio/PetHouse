@@ -150,7 +150,7 @@ export class AdminAdopcionComponent implements OnInit, OnDestroy {
               ),
             ];
 
-            if (request.cedula_url || request.recibo_url) {
+            if (request.has_cedula || request.has_recibo) {
               buttons.push(
                 h(
                   'button',
@@ -196,37 +196,56 @@ export class AdminAdopcionComponent implements OnInit, OnDestroy {
 
   // ── Actions ───────────────────────────────────────
   async showDocs(request: any): Promise<void> {
-    const openFile = (dataUrl: string) => {
-      if (!dataUrl) return;
-      try {
-        const parts = dataUrl.split(',');
-        const mime = parts[0].match(/:(.*?);/)![1];
-        const bin = atob(parts[1]);
-        const arr = new Uint8Array(bin.length);
-        for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
-        const blob = new Blob([arr], { type: mime });
-        window.open(URL.createObjectURL(blob), '_blank');
-      } catch {
-        window.open(dataUrl, '_blank');
-      }
-    };
+    try {
+      Swal.fire({
+        title: 'Cargando documentos...',
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading();
+        }
+      });
 
-    (window as any).openAdoptionDoc = openFile;
+      const fullRequest = await this.adoptionService.getAdoptionById(request.id);
+      Swal.close();
 
-    const cedulaBtn = request.cedula_url
-      ? `<button onclick="window.openAdoptionDoc('${request.cedula_url}')" class="btn btn-primary w-100 mb-2">Ver Cédula</button>`
-      : '<p class="text-muted">Sin cédula adjunta</p>';
+      const openFile = (dataUrl: string) => {
+        if (!dataUrl) return;
+        try {
+          const parts = dataUrl.split(',');
+          const mime = parts[0].match(/:(.*?);/)![1];
+          const bin = atob(parts[1]);
+          const arr = new Uint8Array(bin.length);
+          for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+          const blob = new Blob([arr], { type: mime });
+          window.open(URL.createObjectURL(blob), '_blank');
+        } catch {
+          window.open(dataUrl, '_blank');
+        }
+      };
 
-    const reciboBtn = request.recibo_url
-      ? `<button onclick="window.openAdoptionDoc('${request.recibo_url}')" class="btn btn-outline-primary w-100">Ver Recibo</button>`
-      : '<p class="text-muted">Sin recibo adjunto</p>';
+      (window as any).openAdoptionDoc = openFile;
 
-    await Swal.fire({
-      title: 'Documentos adjuntos',
-      html: `<div class="p-3">${cedulaBtn}${reciboBtn}</div>`,
-      icon: 'info',
-      confirmButtonText: 'Cerrar',
-    });
+      const cedulaBtn = fullRequest.cedula_url
+        ? `<button onclick="window.openAdoptionDoc('${fullRequest.cedula_url}')" class="btn btn-primary w-100 mb-2">Ver Cédula</button>`
+        : '<p class="text-muted">Sin cédula adjunta</p>';
+
+      const reciboBtn = fullRequest.recibo_url
+        ? `<button onclick="window.openAdoptionDoc('${fullRequest.recibo_url}')" class="btn btn-outline-primary w-100">Ver Recibo</button>`
+        : '<p class="text-muted">Sin recibo adjunto</p>';
+
+      await Swal.fire({
+        title: 'Documentos adjuntos',
+        html: `<div class="p-3">${cedulaBtn}${reciboBtn}</div>`,
+        icon: 'info',
+        confirmButtonText: 'Cerrar',
+      });
+    } catch (error) {
+      Swal.fire({
+        title: 'Error',
+        text: 'No se pudieron cargar los documentos.',
+        icon: 'error',
+      });
+    }
   }
 
   async handleApprove(request: any): Promise<void> {

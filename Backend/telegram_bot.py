@@ -550,6 +550,13 @@ def main():
     print("Presiona Ctrl+C para detener.")
     print("=" * 50)
     
+    # Limpiar cualquier webhook existente y actualizaciones pendientes para evitar error 409
+    try:
+        print("[INFO] Eliminando webhook actual (si existe)...")
+        requests.post(f"{BOT_URL}/deleteWebhook", json={"drop_pending_updates": True}, timeout=10)
+    except Exception as e:
+        print(f"[WARNING] No se pudo eliminar el webhook al iniciar: {e}")
+    
     offset = 0
     while True:
         try:

@@ -22,6 +22,8 @@ export interface Adoption {
   fecha_respuesta?: string | null;
   cedula_url?: string | null;
   recibo_url?: string | null;
+  has_cedula?: boolean;
+  has_recibo?: boolean;
   deleted_at?: string | null;
 
   // Relaciones (vienen del backend como objetos anidados)

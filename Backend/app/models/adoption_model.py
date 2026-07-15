@@ -23,3 +23,11 @@ class Adoption(Base):
     pet = relationship("Pet", back_populates="adoptions")
     status = relationship("AdoptionStatus")
     adoptante = relationship("User")
+
+    @property
+    def has_cedula(self) -> bool:
+        return bool(self.cedula_url)
+
+    @property
+    def has_recibo(self) -> bool:
+        return bool(self.recibo_url)

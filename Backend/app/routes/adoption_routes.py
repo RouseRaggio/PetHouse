@@ -8,7 +8,8 @@ from app.schemas.adoption_schema import (
     AdoptionCreate,
     AdoptionStatusUpdate,
     AdoptionResponse,
-    AdoptionCreateResponse
+    AdoptionCreateResponse,
+    AdoptionListResponse
 )
 from app.core.email import send_adoption_request_email
 from app.auth.dependencies import get_current_active_user
@@ -84,7 +85,7 @@ def create(
     return adoption
 
 
-@router.get("/", response_model=List[AdoptionResponse])
+@router.get("/", response_model=List[AdoptionListResponse])
 def read_all(db: Session = Depends(get_db)):
     return get_adoptions(db)
 

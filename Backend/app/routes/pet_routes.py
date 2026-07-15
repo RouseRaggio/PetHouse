@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form, Request, Response
 from sqlalchemy.orm import Session
 from typing import List, Optional
 
@@ -32,9 +32,23 @@ def parse_birth_date(value: Optional[str]) -> Optional[datetime]:
     raise HTTPException(status_code=422, detail="Formato de fecha inválido. Use YYYY-MM-DD o DD/MM/YYYY.")
 
 
+def _format_pet_image_url(pet, request: Request):
+    if not pet:
+        return
+    if pet.image_url and pet.image_url.startswith("data:"):
+        base_url = str(request.base_url).rstrip('/')
+        pet.image_url = f"{base_url}/pets/{pet.id}/image"
+
+
+def _format_pets_image_url(pets, request: Request):
+    for pet in pets:
+        _format_pet_image_url(pet, request)
+
+
 # CREATE
 @router.post("", response_model=PetResponse)
 def create(
+    request: Request,
     name: str = Form(...),
     species: str = Form(...),
     race: Optional[str] = Form(None),
@@ -58,32 +72,51 @@ def create(
         modalidad=modalidad,
         telefono_contacto=telefono_contacto,
     )
-    return create_pet(db, pet_data, user_id=current_user.id, image=image)
+    pet = create_pet(db, pet_data, user_id=current_user.id, image=image)
+    _format_pet_image_url(pet, request)
+    return pet
 
 
 # GET ALL
 @router.get("", response_model=List[PetResponse])
-def read_all(status: Optional[str] = None, db: Session = Depends(get_db)):
-    return get_pets(db, status=status)
+def read_all(request: Request, status: Optional[str] = None, db: Session = Depends(get_db)):
+    pets = get_pets(db, status=status)
+    _format_pets_image_url(pets, request)
+    return pets
 
 
 # GET MY PETS
 # Esta ruta debe declararse antes de /{pet_id} para evitar que "my" se intente parsear como int.
 @router.get("/my", response_model=List[PetResponse])
-def read_my_pets(current_user=Depends(get_current_active_user), db: Session = Depends(get_db)):
-    return get_user_pets(db, current_user.id)
+def read_my_pets(request: Request, current_user=Depends(get_current_active_user), db: Session = Depends(get_db)):
+    pets = get_user_pets(db, current_user.id)
+    _format_pets_image_url(pets, request)
+    return pets
+
+
+# GET ONE IMAGE
+@router.get("/{pet_id}/image")
+def read_pet_image(pet_id: int, db: Session = Depends(get_db)):
+    pet = get_pet(db, pet_id)
+    if not pet or not pet.image_data:
+        raise HTTPException(status_code=404, detail="Imagen no encontrada")
+    return Response(content=pet.image_data, media_type="image/jpeg")
 
 
 # GET ONE
 @router.get("/{pet_id}", response_model=PetResponse)
-def read_one(pet_id: int, db: Session = Depends(get_db)):
-    return get_pet(db, pet_id)
+def read_one(pet_id: int, request: Request, db: Session = Depends(get_db)):
+    pet = get_pet(db, pet_id)
+    _format_pet_image_url(pet, request)
+    return pet
 
 
 # UPDATE
 @router.put("/{pet_id}", response_model=PetResponse)
-def update(pet_id: int, data: PetUpdate, db: Session = Depends(get_db)):
-    return update_pet(db, pet_id, data)
+def update(pet_id: int, request: Request, data: PetUpdate, db: Session = Depends(get_db)):
+    pet = update_pet(db, pet_id, data)
+    _format_pet_image_url(pet, request)
+    return pet
 
 
 # DELETE (Soft)

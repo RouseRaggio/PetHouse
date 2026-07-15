@@ -22,6 +22,15 @@ export class AdoptionService {
     return data?.data ?? data;
   }
 
+  async getAdoptionById(id: number): Promise<any> {
+    const data = await firstValueFrom(
+      this.http.get<any>(`${this.apiUrl}/adoptions/${id}`, {
+        headers: this.getHeaders(),
+      }),
+    );
+    return data?.data ?? data;
+  }
+
   async changeAdoptionStatus(id: number, statusId: number): Promise<any> {
     return firstValueFrom(
       this.http.put(
