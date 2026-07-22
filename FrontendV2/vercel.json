@@ -4,13 +4,5 @@
       "source": "/api/(.*)",
       "destination": "http://18.225.173.10:8000/$1"
     }
-  ],
-  "headers": [
-    {
-      "source": "/api/(.*)",
-      "headers": [
-        { "key": "X-Forwarded-For", "value": "client-ip" }
-      ]
-    }
   ]
-}
+}
