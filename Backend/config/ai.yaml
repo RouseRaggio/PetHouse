@@ -1,0 +1,55 @@
+ai:
+  max_question_length: 1000
+  provider: groq
+
+  groq:
+    api_key: ${GROQ_API_KEY}
+    model: llama-3.3-70b-versatile
+    temperature: 0.1
+    max_tokens: 4096
+
+  health_check:
+    enabled: true
+    interval_seconds: 60
+    timeout_seconds: 10
+
+  mcp:
+    toolbox_url: http://mcp-toolbox:5000/mcp
+    database:
+      type: ${AI_DB_TYPE}
+      connection_string: ${AI_DB_CONNECTION}
+
+  sql_validator:
+    max_rows: 1000
+    execution_timeout_ms: 30000
+    max_query_length: 10000
+    max_join_depth: 5
+
+  audit:
+    enabled: true
+    retention_days: 90
+
+  prompts:
+    sql_generation: |
+      You are a SQL expert. Given the following database schema,
+      generate a PostgreSQL SELECT query to answer the user's question.
+      Return only the SQL statement, no markdown or explanation.
+
+      {history}
+
+      Database schema:
+      {schema}
+
+      Question: {question}
+
+      SQL:
+
+    response_formatting: |
+      Given the original question, the SQL used, and the query results,
+      provide a concise natural language answer for an administrator.
+
+      Question: {question}
+      SQL: {sql}
+      Results: {results}
+
+      Answer:
