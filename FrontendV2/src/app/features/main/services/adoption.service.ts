@@ -16,7 +16,7 @@ export class AdoptionService {
 
   async getAdoptions(): Promise<any[]> {
     const data = await firstValueFrom(
-      this.http.get<any>(`${this.apiUrl}/adoptions/`, {
+      this.http.get<any>(`${this.apiUrl}/adoptions`, {
         headers: this.getHeaders(),
       }),
     );

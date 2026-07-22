@@ -76,7 +76,7 @@ export class PetService {
   async submitAdoption(formData: FormData): Promise<any> {
     const token = localStorage.getItem('token');
     return firstValueFrom(
-      this.http.post(`${this.apiUrl}/adoptions/`, formData, {
+      this.http.post(`${this.apiUrl}/adoptions`, formData, {
         headers: { Authorization: `Bearer ${token}` },
       }),
     );

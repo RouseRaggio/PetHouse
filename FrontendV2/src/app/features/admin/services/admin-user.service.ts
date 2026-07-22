@@ -16,7 +16,7 @@ export class AdminUserService {
 
   async getUsers(): Promise<any[]> {
     const data = await firstValueFrom(
-      this.http.get<any>(`${this.apiUrl}/users/`, {
+      this.http.get<any>(`${this.apiUrl}/users`, {
         headers: this.getHeaders(),
       }),
     );
@@ -25,7 +25,7 @@ export class AdminUserService {
 
   async createUser(userData: any): Promise<any> {
     return firstValueFrom(
-      this.http.post(`${this.apiUrl}/users/`, userData, {
+      this.http.post(`${this.apiUrl}/users`, userData, {
         headers: this.getHeaders(),
       }),
     );

@@ -16,7 +16,7 @@ export class AuditService {
 
   async getAuditLogs(params: any = {}): Promise<any[]> {
     const query = new URLSearchParams(params).toString();
-    const url = query ? `${this.apiUrl}/audit-logs/?${query}` : `${this.apiUrl}/audit-logs/`;
+    const url = query ? `${this.apiUrl}/audit-logs?${query}` : `${this.apiUrl}/audit-logs`;
 
     try {
       const data = await firstValueFrom(
@@ -43,7 +43,7 @@ export class AuditService {
   async getUsers(): Promise<any[]> {
     try {
       const data = await firstValueFrom(
-        this.http.get<any>(`${this.apiUrl}/users/`, {
+        this.http.get<any>(`${this.apiUrl}/users`, {
           headers: this.getHeaders(),
         }),
       );
